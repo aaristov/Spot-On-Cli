@@ -30,11 +30,11 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://gitlab.com/padouppadoup/fastSPT/',
+    url='https://gitlab.com/tjian-darzacq-lab/Spot-On-cli',
 
     # Author details
     author='Maxime Woringer, Anders Sejr Hansen',
-    author_email='maxime.woringer@berkeley.edu',
+    author_email='maxime@woringer.fr',
 
     # Choose your license
     license='GPLv3+',
