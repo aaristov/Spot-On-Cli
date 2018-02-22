@@ -30,28 +30,33 @@ def pdist(m):
 ## ==== Main functions
 ##
 def compute_jump_length_distribution(trackedPar,
-                                     CDF=False, useAllTraj=False, TimePoints=8,
+                                     CDF=False, useEntireTraj=False, TimePoints=8,
                                      GapsAllowed=1, JumpsToConsider=4,
-                                     MaxJump=1.25, BinWidth=0.010):
+                                     MaxJump=1.25, BinWidth=0.010,
+                                     useAllTraj=None):
     """Function that takes a series of translocations and computes an histogram of
     jump lengths. Returns both
 
     Arguments:
     - trackedPar: an object containing the trajectories
     - CDF (bool): compute the cumulative distribution function (CDF) instead of the probability distribution function (PDF)
-    - useAllTraj (bool): True if we should use all trajectories to compute the histogram. This can lead to an overestimate of the bound fraction (see paper), but useful for troubleshooting
+    - useEntireTraj (bool): True if we should use all trajectories to compute the histogram. This can lead to an overestimate of the bound fraction (see paper), but useful for troubleshooting
     - TimePoints (int): how many jump lengths to use for the fitting: 3 timepoints, yields 2 jumps
     - GapsAllowed (int): number of missing frames that are allowed in a single trajectory
     - JumpsToConsider (int): if `UseAllTraj` is False, then use no more than 3 jumps. 
     - TimeGap (float): time between frames in milliseconds;
     - MaxJump (float): for PDF fitting and plotting
     - BinWidth (float): for PDF fitting and plotting
-
-
+    - useAllTraj (bool): DEPRECATED alias for useEntireTraj
 
     Returns:
     - An histogram at various \Delta t values.
     """
+
+    if useAllTraj == None:
+        useAllTraj = useEntireTraj
+    else:
+        print "WARNING: the useAllTraj parameter is deprecated, use useEntireTraj instead"
 
     PDF = not CDF
     tic = time.time() # Start the timer
