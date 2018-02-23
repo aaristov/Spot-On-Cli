@@ -357,11 +357,11 @@ def fit_jump_length_distribution(JumpProb, JumpProbCDF,
 def _compute_2states(D_FREE, D_BOUND, F_BOUND, curr_dT, r, DeltaZ_use, LocError, useZcorr):
     """Subroutine for simulate_jump_distribution"""
     ## ==== Compute the integral
-    HalfDeltaZ_use = DeltaZ_use/2.
-    stp = DeltaZ_use/200.
-    xint = np.linspace(-HalfDeltaZ_use, HalfDeltaZ_use, 200)
-    yint = [C_AbsorBoundAUTO(i, curr_dT, D_FREE, HalfDeltaZ_use)*stp for i in xint]
-    if useZcorr:
+    if useZcorr:    
+        HalfDeltaZ_use = DeltaZ_use/2.
+        stp = DeltaZ_use/200.
+        xint = np.linspace(-HalfDeltaZ_use, HalfDeltaZ_use, 200)
+        yint = [C_AbsorBoundAUTO(i, curr_dT, D_FREE, HalfDeltaZ_use)*stp for i in xint]
         Z_corr = 1/DeltaZ_use * np.array(yint).sum() # see below
     else:
         Z_corr=1
@@ -378,18 +378,18 @@ def _compute_3states(D_FAST, D_MED, D_BOUND, F_FAST, F_BOUND,
                      curr_dT, r, DeltaZ_useFAST, DeltaZ_useMED, LocError, useZcorr):
     """Subroutine for simulate_jump_distribution"""
     ## ==== Compute the integral
-    HalfDeltaZ_useFAST = DeltaZ_useFAST/2.
-    xintFAST = np.arange(-HalfDeltaZ_useFAST, HalfDeltaZ_useFAST, 4e-2)
-    yintFAST = [C_AbsorBoundAUTO(i, curr_dT, D_FAST, HalfDeltaZ_useFAST)*4e-2 for i in xintFAST]
     if useZcorr:
+        HalfDeltaZ_useFAST = DeltaZ_useFAST/2.
+        xintFAST = np.arange(-HalfDeltaZ_useFAST, HalfDeltaZ_useFAST, 4e-2)
+        yintFAST = [C_AbsorBoundAUTO(i, curr_dT, D_FAST, HalfDeltaZ_useFAST)*4e-2 for i in xintFAST]
         Z_corrFAST = 1/DeltaZ_useFAST * np.array(yintFAST).sum()
     else:
         Z_corrFAST = 1
 
-    HalfDeltaZ_useMED = DeltaZ_useMED/2.
-    xintMED = np.arange(-HalfDeltaZ_useMED, HalfDeltaZ_useMED, 4e-2)
-    yintMED = [C_AbsorBoundAUTO(i, curr_dT, D_MED, HalfDeltaZ_useMED)*4e-2 for i in xintMED]
     if useZcorr:
+        HalfDeltaZ_useMED = DeltaZ_useMED/2.
+        xintMED = np.arange(-HalfDeltaZ_useMED, HalfDeltaZ_useMED, 4e-2)
+        yintMED = [C_AbsorBoundAUTO(i, curr_dT, D_MED, HalfDeltaZ_useMED)*4e-2 for i in xintMED]
         Z_corrMED = 1/DeltaZ_useMED * np.array(yintMED).sum()
     else:
         Z_corrMED = 1
@@ -441,11 +441,16 @@ def simulate_jump_length_distribution(parameter_guess, JumpProb,
     # First calculate the corrected DeltaZ:
     ##DeltaZ_use = dZ + 0.15716  * D_FREE**.5 + 0.20811 # See CHANGELOG_fit
     ##DeltaZ_use = dZ + 0.24472 * D_FREE**.5 + 0.19789
-    if fit2states:
-        DeltaZ_use = dZ + a * D_FREE**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
+    if useZcorr:
+        if fit2states:
+            DeltaZ_use = dZ + a * D_FREE**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
+        else:
+            DeltaZ_useFAST = dZ + a * D_FAST**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
+            DeltaZ_useMED = dZ + a * D_MED**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
     else:
-        DeltaZ_useFAST = dZ + a * D_FAST**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
-        DeltaZ_useMED = dZ + a * D_MED**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
+        DeltaZ_use = None
+        DeltaZ_useFAST = None
+        DeltaZ_useMED = None
 
     for iterator in range(JumpProb.shape[0]):
         # Calculate the jump length distribution of the parameters for each
@@ -519,12 +524,17 @@ def generate_jump_length_distribution(fitparams, JumpProb, r,
     #Z_corr = np.zeros(JumpProb.shape[0]) # Assume ABSORBING BOUNDARIES
 
     # Calculate the axial Z-correction
-    if fit2states:
-        DeltaZ_use = dZ + a * D_free**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
+    if useZcorr:
+        if fit2states:
+            DeltaZ_use = dZ + a * D_free**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
+        else:
+            DeltaZ_useFAST = dZ + a * D_fast**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
+            DeltaZ_useMED = dZ + a * D_med**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
     else:
-        DeltaZ_useFAST = dZ + a * D_fast**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
-        DeltaZ_useMED = dZ + a * D_med**.5 + b #HalfDeltaZ_use = DeltaZ_use/2
-
+        DeltaZ_use = None
+        DeltaZ_useFAST = None
+        DeltaZ_useMED = None
+            
     for iterator in range(JumpProb.shape[0]):
         # Calculate the jump length distribution of the parameters for each
         # time-jump
