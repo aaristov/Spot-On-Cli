@@ -47,6 +47,12 @@ See `fastSPT_tutorial.ipynb`. The tutorial is also available online: **address o
 
 # Usage
 ## Main functions
+
+## Extra functions
+The `writers` submodule contains some useful functions:
+
+- `mat_to_csv(in_path, out_path)` converts a .mat file to a CSV. It can easily be scripted.
+
 ## Input file format
 ## Caveats
 
@@ -69,8 +75,12 @@ This program is released under the GNU General Public License version 3 or upper
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
+# Deploying (developer only)
+```
+python setup.py sdist
+gpg --detach-sign -a dist/fastspt-11.4.tar.gz
+twine upload dist/fastspt-11.4.tar.gz dist/fastspt-11.4.tar.gz.asc
+```
 # Authors
 Maxime Woringer, Anders Sejr Hansen
 

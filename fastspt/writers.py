@@ -10,6 +10,7 @@ import scipy.io, pandas
 
 ## ==== Functions
 def write_trackmate(da):
+    """Experimental (not to say deprecated)"""
     #tree = ElementTree.Element('tmx', {'version': '1.4a'})
     Tracks = ElementTree.Element('Tracks', {'lol': 'oui'})
     ElementTree.SubElement(Tracks,'header',{'adminlang': 'EN',})
