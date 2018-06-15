@@ -40,6 +40,11 @@ def mat_to_csv(inF, outF):
     pandas.DataFrame(t).to_csv(outF)
 
 
+def write_4dn(df, hd):
+    """"""
+    raise NotImplementedError("Sorry :s")
+
+
 if __name__ == "__main__":
     import sys
     print "Running standalone"

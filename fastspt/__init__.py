@@ -1,7 +1,7 @@
 from fastspt import *
 from version import __version__
 
-import fastSPT_tools, readers
+import fastSPT_tools, readers, writers, format4DN
 try:
 	import fastSPT_plot
 except Exception, e:

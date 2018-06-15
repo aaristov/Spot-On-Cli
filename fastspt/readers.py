@@ -3,6 +3,7 @@
 ## readers.py imports many file formats widespread in SPT analysis
 ## Imported from Spot-On
 
+import format4DN
 import scipy.io, os, json, xmltodict
 import numpy as np
 import pandas as pd
@@ -12,6 +13,13 @@ def read_evalspt(fn, framerate, pixelsize):
     return read_arbitrary_csv(fn, col_traj=3, col_x=0, col_y=1, col_frame=2,
                               framerate=framerate/1000., pixelsize=pixelsize/1000.,
                               sep="\t", header=None)
+
+## ==== 4DN format
+def read_4DN(fn, return_header=False, return_pandas=False):
+    """Read the 4D nucleome SPT format
+    Documented at: https://docs.google.com/document/d/1SKljQyuTNtKQOxOD5AC9ZBqZZETDXtUz1BImGZ99Z3M/edit
+    """
+    return format4DN.read_4DN(fn, return_header, return_pandas)
 
 ## ==== MOSAIC suite file format
 def read_mosaic(fn, framerate, pixelsize):
