@@ -20,6 +20,7 @@ def write_trackmate(da):
         f.write('<?xml version="1.0" encoding="UTF-8" ?>')
         ElementTree.ElementTree(Tracks).write(f, 'utf-8')
 
+
 def mat_to_csv(inF, outF):
     """Convert a .mat file (Anders's mat file) to a csv"""
     try:
@@ -29,17 +30,18 @@ def mat_to_csv(inF, outF):
         return
 
     t = []
-    for (i,traj) in enumerate(d):
+    for (i, traj) in enumerate(d):
         for j in range(traj[0].shape[0]):
             t.append({'trajectory': i,
-                      'x': traj[0][j,0],
-                      'y': traj[0][j,1],
-                      'frame': traj[1][j,0]-1,
-                      't': traj[2][j,0]})
+                      'x': traj[0][j, 0],
+                      'y': traj[0][j, 1],
+                      'frame': traj[1][j, 0]-1,
+                      't': traj[2][j, 0]})
     pandas.DataFrame(t).to_csv(outF)
+
 
 if __name__ == "__main__":
     import sys
     print "Running standalone"
     #write_trackmate("")
-    to_csv(sys.argv[1], sys.argv[1].replace(".mat", ".csv"))
+    mat_to_csv(sys.argv[1], sys.argv[1].replace(".mat", ".csv"))

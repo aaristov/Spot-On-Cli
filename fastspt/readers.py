@@ -87,6 +87,9 @@ def read_anders(fn, new_format=True):
         traces.append(zip(x,y,t,f))
     return traces
 
+## ==== 4DN file format
+
+
 ## ==== Format for fastSPT
 def to_fastSPT(f):
     """Returns an object formatted to be used with fastSPT from a parsed dataset
@@ -146,27 +149,27 @@ def read_arbitrary_csv(fn, col_x="", col_y="", col_frame="", col_t="t",
         raise IOError("Missing columns in the file, or wrong header")
         
     # Correct units if needed
-    if framerate != None:
+    if framerate is not None:
         da[col_t]=da[col_frame]*framerate
-    if pixelsize != None:
-        da[col_x]*=pixelsize
-        da[col_y]*=pixelsize
+    if pixelsize is not None:
+        da[col_x] *= pixelsize
+        da[col_y] *= pixelsize
         
     # Apply potential callback
-    if cb != None:
+    if cb is not None:
         da = cb(da)
-        
+
     # Split by traj
-    out = []
-    for (idx,t) in da.sort_values(col_traj).groupby(col_traj):
-        tr = [(tt[1][col_x], tt[1][col_y], tt[1][col_t], int(tt[1][col_frame])) for tt in t.sort_values(col_frame).iterrows()] # Order by trace, then by frame
-        out.append(tr)
-    
+    out = pandas_to_fastSPT(da, col_traj, col_x, col_y, col_t, col_frame)
     return out
 
-
-
-
+def pandas_to_fastSPT(da, col_traj, col_x, col_y, col_t, col_frame):
+    out = []
+    for (idx, t) in da.sort_values(col_traj).groupby(col_traj):
+        tr = [(tt[1][col_x], tt[1][col_y], tt[1][col_t], int(tt[1][col_frame]))
+              for tt in t.sort_values(col_frame).iterrows()]  # Order by trace, then by frame
+        out.append(tr)
+    return out
 
 def lol():
     return "Why so serious?"
