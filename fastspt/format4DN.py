@@ -1,4 +1,4 @@
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 # Library to read/write in the 4DN format.
 # So far, the 4DN format is documented on: https://docs.google.com/document/d/1SKljQyuTNtKQOxOD5AC9ZBqZZETDXtUz1BImGZ99Z3M/edit#
 # By MW, GPLv3+, Jun 2018
@@ -23,14 +23,14 @@ def read_header(fn):
             # you may want to process the headers differently,  but here we just convert it to a list
             header = [i.replace('\n', '') for i in headiter]
         return header
-    
+
     hd = read_raw_header(fn)
     out = {}
-    
+
     # Check consistency
     if len(hd)==0:
         raise IOError("Invalid file format: the file contains no metadata.")
-    
+
     # Check SPT format
     if not hd[0].startswith("##SPT format v"):
         raise IOError("Invalid file format: the first line of metadata should start as: '##SPT format v'.")
@@ -153,7 +153,12 @@ def read_4DN(fn, return_header=False, return_pandas=False):
     panda dataframe.
     """
 
-    df = pd.read_csv(fn, sep='\t', comment='#')
+    def parse_columns(col):
+        return col.split("\t")
+
+    hd = read_header(fn)
+    cols = parse_columns(hd["Columns"])
+    df = pd.read_csv(fn, sep='\t', comment='#', names=cols)
 
     if not return_pandas:  # convert to fastSPT format
         try:  # try to read properly formatted file
@@ -161,7 +166,6 @@ def read_4DN(fn, return_header=False, return_pandas=False):
         except:  # Read buggy format
             df = readers.pandas_to_fastSPT(df, 'Trajectory_ID', ' X', ' Y', ' t', ' Frame_ID')  # contains spaces
     if return_header:
-        hd = read_header(fn)
         return {"header": hd, "data": df}
     else:
         return df
