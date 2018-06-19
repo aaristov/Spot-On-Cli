@@ -159,7 +159,7 @@ def read_4DN(fn, return_header=False, return_pandas=False):
     hd = read_header(fn)
     cols = parse_columns(hd["Columns"])
     df = pd.read_csv(fn, sep='\t', comment='#', names=cols)
-    if len(df["Cell_ID"].unique())!=1 or len(df["BiologicalReplicate_ID"])!=1:
+    if len(df["Cell_ID"].unique())!=1 or len(df["BiologicalReplicate_ID"].unique())!=1:
         raise IOError("4DN format with more than one Cell_ID or BiologicalReplicate_ID is currently not supported")
 
     if not return_pandas:  # convert to fastSPT format
