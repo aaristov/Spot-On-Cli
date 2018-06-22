@@ -160,7 +160,7 @@ def read_4DN(fn, return_header=False, return_pandas=False):
     cols = parse_columns(hd["Columns"])
     df = pd.read_csv(fn, sep='\t', comment='#', names=cols)
     if len(df["Cell_ID"].unique())!=1 or len(df["BiologicalReplicate_ID"].unique())!=1:
-        raise IOError("4DN format with more than one Cell_ID or BiologicalReplicate_ID is currently not supported")
+        raise IOError("4DN format with more than one Cell_ID or BiologicalReplicate_ID is currently not supported. You might want to split your file using an online tool such as: https://tjian-darzacq-lab.gitlab.io/Split_4DN_format/")
 
     if not return_pandas:  # convert to fastSPT format
         try:  # try to read properly formatted file
