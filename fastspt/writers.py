@@ -45,8 +45,22 @@ def write_4dn(df, hd):
     raise NotImplementedError("Sorry :s")
 
 
+def traces_to_csv(traces):
+    """Returns a CSV file with the format 
+    trajectory,x,y,t,frame
+    """
+    csv = "trajectory,x,y,t,frame\n"
+    for (tr_n, tr) in enumerate(traces):
+        for pt in tr:
+            csv +="{},{},{},{},{}\n".format(tr_n, pt[0],pt[1],pt[2],pt[3])
+    return csv
+
+def write_csv(fn, da):
+    with open(fn, 'w') as f:
+        f.write(traces_to_csv(da))
+
+
 if __name__ == "__main__":
     import sys
     print "Running standalone"
-    #write_trackmate("")
     mat_to_csv(sys.argv[1], sys.argv[1].replace(".mat", ".csv"))

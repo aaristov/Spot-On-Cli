@@ -27,9 +27,12 @@ def read_mosaic(fn, framerate, pixelsize):
 
 ## ==== TrackMate file format
 def read_trackmate_csv(fn, framerate):
-    """Do not call directly, wrapped into `read_trackmate`"""    
+    """Do not call directly, wrapped into `read_trackmate`"""
     def cb(da):
-        return da[da.TRACK_ID!="None"]
+        try:
+            return da[da.TRACK_ID!="None"]
+        except:
+            return da[da.TRACK_ID!=np.nan]
     return read_arbitrary_csv(fn, col_traj="TRACK_ID", col_x="POSITION_X", col_y="POSITION_Y", col_frame="FRAME", framerate=framerate/1000., cb=cb)
 
 def read_trackmate_xml(fn):
@@ -99,7 +102,7 @@ def read_anders(fn, new_format=True):
 
 
 ## ==== Format for fastSPT
-def to_fastSPT(f):
+def to_fastSPT(f, from_json=True):
     """Returns an object formatted to be used with fastSPT from a parsed dataset
     (in the internal representation of the GUI). f is a file descriptor (thus the
     function assumes that the file exists).
@@ -109,7 +112,10 @@ def to_fastSPT(f):
     object, and of the data types. I expect many bugs to arise from improper 
     converters that do not fully comply with the file format."""
 
-    da = json.loads(f.read()) ## Load data
+    if from_json:
+        da = json.loads(f.read()) ## Load data
+    else:
+        da = f
 
     ## Create the object
     dt = np.dtype([('xy', 'O'), ('TimeStamp', 'O'), ('Frame', 'O')]) # dtype
@@ -136,6 +142,7 @@ def traces_to_csv(traces):
     """Returns a CSV file with the format 
     trajectory,x,y,t,frame
     """
+    print("WARNING: deprecated use of 'traces_to_csv' in fastspt.readers, use it in 'fastspt.writers.traces_to_csv instead'.")
     csv = "trajectory,x,y,t,frame\n"
     for (tr_n, tr) in enumerate(traces):
         for pt in tr:
@@ -178,7 +185,3 @@ def pandas_to_fastSPT(da, col_traj, col_x, col_y, col_t, col_frame):
               for tt in t.sort_values(col_frame).iterrows()]  # Order by trace, then by frame
         out.append(tr)
     return out
-
-def lol():
-    return "Why so serious?"
-
