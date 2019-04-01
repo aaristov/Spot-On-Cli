@@ -47,4 +47,4 @@ def list(path, string=True):
         return (da, ok)
 
 if __name__ == "__main__":
-    print list(path=".")
+    print(list(path="."))

@@ -56,7 +56,7 @@ def compute_jump_length_distribution(trackedPar,
     if useAllTraj == None:
         useAllTraj = useEntireTraj
     else:
-        print "WARNING: the useAllTraj parameter is deprecated, use useEntireTraj instead"
+        print("WARNING: the useAllTraj parameter is deprecated, use useEntireTraj instead")
 
     PDF = not CDF
     tic = time.time() # Start the timer
@@ -71,7 +71,7 @@ def compute_jump_length_distribution(trackedPar,
     CellFrames = 100*round(TempLastFrame/100)
     CellLocs = sum([i[2].shape[1] for i in trackedPar]) # for counting the total number of localizations
 
-    print "Number of frames: {}, number of localizations: {}".format(CellFrames, CellLocs)
+    print("Number of frames: {}, number of localizations: {}".format(CellFrames, CellLocs))
 
     ##
     ## ==== Compile histograms for each jump lengths
@@ -298,13 +298,13 @@ def fit_jump_length_distribution(JumpProb, JumpProbCDF,
         if fit2states:
             init = [np.random.rand(len(LB))*diff+LB for i in range(iterations)]
     elif len(init) != iterations:
-        print "'iterations' variable ignored because 'init' is provided and has length {}".format(len(init))
+        print("'iterations' variable ignored because 'init' is provided and has length {}".format(len(init)))
 
     for (i,guess) in enumerate(init):
         eps = 1e-8
         if fit2states:
             if (guess.shape[0] != 3 and not fitSigma) or (guess.shape[0] != 4 and fitSigma): 
-                print "init value has a wrong number of elements"
+                print("init value has a wrong number of elements")
             pars['D_free'] .set(min=LB[0], max=UB[0], value=guess[0])
             pars['D_bound'].set(min=LB[1], max=UB[1], value=guess[1])
             pars['F_bound'].set(min=LB[2], max=UB[2], value=guess[2])
@@ -318,7 +318,7 @@ def fit_jump_length_distribution(JumpProb, JumpProbCDF,
                 pars['D_bound'].set(value=LB[1], vary=False)
         else:
             if (guess.shape[0] != 5 and not fitSigma) or (guess.shape[0] != 6 and fitSigma):
-                print "init value has a wrong number of elements"
+                print("init value has a wrong number of elements")
 
             pars['D_fast'] .set(min=LB[0], max=UB[0], value=guess[0])
             pars['D_med']  .set(min=LB[1], max=UB[1], value=guess[1])
@@ -348,7 +348,7 @@ def fit_jump_length_distribution(JumpProb, JumpProbCDF,
                 print('==================================================')
                 print('Improved fit on iteration {}'.format(i+1))
                 print('Improved error is {}'.format(ssq2))
-                print out.params.pretty_print(columns=['value', 'min', 'max', 'stderr'])
+                print(out.params.pretty_print(columns=['value', 'min', 'max', 'stderr']))
                 print('==================================================')
         else:
             print('Iteration {} did not yield an improved fit'.format(i+1))
@@ -457,7 +457,7 @@ def simulate_jump_length_distribution(parameter_guess, JumpProb,
         # time-jump
         curr_dT = (iterator+1)*dT
         if verbose:
-            print "-- computing dT = {} ({}/{})".format(curr_dT, iterator+1, JumpProb.shape[0])
+            print("-- computing dT = {} ({}/{})".format(curr_dT, iterator+1, JumpProb.shape[0]))
         if fit2states:
             y[iterator,:] = _compute_2states(D_FREE, D_BOUND, F_BOUND,
                                              curr_dT, r, DeltaZ_use, LocError, useZcorr)
@@ -471,17 +471,18 @@ def simulate_jump_length_distribution(parameter_guess, JumpProb,
         # norm_y = np.zeros_like(y)
         # for i in range(y.shape[0]): # Normalize y as a PDF
         #     norm_y[i,:] = y[i,:]/y[i,:].sum()        
-	#Now bin the output y so that it matches the JumpProb variable:
-	for i in range(JumpProb.shape[0]): #1:size(JumpProb,1)
-	    for j in range(JumpProb.shape[1]): #=1:size(JumpProb,2)
-		if j == (JumpProb.shape[1]-1):
-		    Binned_y_PDF[i,j] = y[i,maxIndex:].mean()
-		else:
+        #Now bin the output y so that it matches the JumpProb variable:
+        for i in range(JumpProb.shape[0]): #1:size(JumpProb,1)
+            for j in range(JumpProb.shape[1]): #=1:size(JumpProb,2)
+                if j == (JumpProb.shape[1]-1):
+                    Binned_y_PDF[i,j] = y[i,maxIndex:].mean()
+                else:
                     minIndex = np.argmin(np.abs(r-HistVecJumps[j]))
                     maxIndex = np.argmin(np.abs(r-HistVecJumps[j+1]))
-		    Binned_y_PDF[i,j] = y[i,minIndex:maxIndex].mean()
-	for i in range(JumpProb.shape[0]): #1:size(JumpProb,1) ## Normalize
-	    Binned_y_PDF[i,:] = Binned_y_PDF[i,:]/sum(Binned_y_PDF[i,:]);
+                    Binned_y_PDF[i,j] = y[i,minIndex:maxIndex].mean()
+                    
+        for i in range(JumpProb.shape[0]): #1:size(JumpProb,1) ## Normalize
+            Binned_y_PDF[i,:] = Binned_y_PDF[i,:]/sum(Binned_y_PDF[i,:]);
         Binned_y = Binned_y_PDF #You want to fit to a histogram, so no need to calculate the CDF
         return Binned_y
 

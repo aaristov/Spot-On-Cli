@@ -62,5 +62,5 @@ def write_csv(fn, da):
 
 if __name__ == "__main__":
     import sys
-    print "Running standalone"
+    print("Running standalone")
     mat_to_csv(sys.argv[1], sys.argv[1].replace(".mat", ".csv"))

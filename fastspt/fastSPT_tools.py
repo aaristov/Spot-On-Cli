@@ -12,7 +12,7 @@ def list_sample_datasets(path):
     """Simple relay function that allows to list datasets from a datasets.py file"""
     sys.path.append(path)
     import datasets
-    reload(datasets) # Important I think
+    #reload(datasets) # Important I think
     return datasets.list(path, string=True)
 
 def load_dataset(path, datasetID, cellID):
@@ -20,7 +20,7 @@ def load_dataset(path, datasetID, cellID):
     ## Get the information about the datasets
     sys.path.append(path)
     import datasets
-    reload(datasets) # Important I think
+    #reload(datasets) # Important I think
     li = datasets.list(path, string=False)
 
     if type(cellID) == int:

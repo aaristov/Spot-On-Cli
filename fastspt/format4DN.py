@@ -3,7 +3,7 @@
 # So far, the 4DN format is documented on: https://docs.google.com/document/d/1SKljQyuTNtKQOxOD5AC9ZBqZZETDXtUz1BImGZ99Z3M/edit#
 # By MW, GPLv3+, Jun 2018
 
-import readers
+from fastspt import readers
 import pandas as pd
 from itertools import takewhile
 
@@ -121,8 +121,8 @@ def check_header(hd, columns, check_columns=True):
     
     # Check that the mandatory fields are present 
     req = get_empty_header(hd['version'], desc=False, minimal=True)
-    print req.keys()
-    print hd.keys()
+    print(req.keys())
+    print(hd.keys())
     for r in req.keys():
         if r[1:] not in hd:
             if r != "version":

@@ -3,7 +3,7 @@
 ## readers.py imports many file formats widespread in SPT analysis
 ## Imported from Spot-On
 
-import format4DN
+from fastspt import format4DN
 import scipy.io, os, json, xmltodict
 import numpy as np
 import pandas as pd
@@ -35,9 +35,9 @@ def read_trackmate_csv(fn, framerate):
             return da[da.TRACK_ID!=np.nan]
     return read_arbitrary_csv(fn, col_traj="TRACK_ID", col_x="POSITION_X", col_y="POSITION_Y", col_frame="FRAME", framerate=framerate/1000., cb=cb)
 
-def read_trackmate_xml(fn):
+def read_trackmate_xml(path):
     """Do not call directly, wrapped into `read_trackmate`."""
-    x=xmltodict.parse(open(fn, 'r').read())
+    x=xmltodict.parse(open(path, 'r').read())
     # Checks
     spaceunit = x['Tracks']['@spaceUnits']
     if spaceunit not in ('micron', 'um'):
