@@ -1,7 +1,7 @@
 import sys
 
 sys.path.append("/home/maxime/code/fastSPT/")
-import fastSPT, fastSPT_tools
+from fastSPT import fastSPT, fastSPT_tools
 
 sys.path.append("/home/maxime/thesis/9_SPT/fastSPT/SPTGUI/")
 import parsers
