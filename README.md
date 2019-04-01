@@ -9,13 +9,15 @@ Although the functions and methods can be called directly, we provide a walk-thr
 
 # Dependencies
 
+- matplotlib
 - numpy
 - scipy
 - lmfit
+- xmltodict
 
 Optional: jupyter
 
-Your package manager may provide precompiled versions of `numpy` and `scipy`. In that case, it might be worth using those libraries, because compilation can take a significant amount of time.
+Your package manager may provide precompiled versions of `matplotlib`, `numpy` and `scipy`. In that case, it might be worth using those libraries, because compilation can take a significant amount of time.
 
 # Installation (from pip)
 
