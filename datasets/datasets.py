@@ -4,7 +4,7 @@
 
 import os
 
-def list(path, string=True):
+def list_path(path, string=True):
     """ A simple function that return the list of datasets """
     d1 = {"description": "20160216_C87_Halo-mCTCF_5nM_PA-JF549_FastTracking: 5 ms camera, 1 ms 561 nm, 6.75 ms per frame.",
         "path": '/Users/AndersSejrHansen/Dropbox/MatLab/Lab/Microscopy/SingleParticleTracking/Analysis/FastTrackingData/20160216_C87_Halo-mCTCF_5nM_PA-JF549_FastTracking/',
@@ -47,4 +47,4 @@ def list(path, string=True):
         return (da, ok)
 
 if __name__ == "__main__":
-    print(list(path="."))
+    print(list_path(path="."))
