@@ -36,20 +36,20 @@ def read_trackmate_csv(fn, framerate):
     return read_arbitrary_csv(fn, col_traj="TRACK_ID", col_x="POSITION_X", col_y="POSITION_Y", col_frame="FRAME", framerate=framerate/1000., cb=cb)
 
 def read_trackmate_xml(path):
-    """Do not call directly, wrapped into `read_trackmate`."""
-    x=xmltodict.parse(open(path, 'r').read())
+    """Converts xml to [x, y, time, frame] table"""
+    data = xmltodict.parse(open(path, 'r').read(), encoding='utf-8')
     # Checks
-    spaceunit = x['Tracks']['@spaceUnits']
-    if spaceunit not in ('micron', 'um'):
+    spaceunit = data['Tracks']['@spaceUnits']
+    if spaceunit not in ('micron', 'um', 'µm', 'Âµm'):
         raise IOError("Spatial unit not recognized: {}".format(spaceunit))
-    if x['Tracks']['@timeUnits'] != 'ms':
+    if data['Tracks']['@timeUnits'] != 'ms':
         raise IOError("Time unit not recognized")
     
     # parameters
-    framerate = float(x['Tracks']['@frameInterval'])/1000. # framerate in ms
+    framerate = float(data['Tracks']['@frameInterval'])/1000. # framerate in ms
     traces = []
     
-    for particle in x['Tracks']['particle']:  
+    for particle in data['Tracks']['particle']:  
         traces.append([(float(d['@x']), float(d['@y']), float(d['@t'])*framerate, float(d['@t'])) for d in particle['detection']])
     return traces
 
@@ -103,14 +103,7 @@ def read_anders(fn, new_format=True):
 
 ## ==== Format for fastSPT
 def to_fastSPT(f, from_json=True):
-    """Returns an object formatted to be used with fastSPT from a parsed dataset
-    (in the internal representation of the GUI). f is a file descriptor (thus the
-    function assumes that the file exists).
-
-    Actually, the fastSPT code is a little bit picky about what it likes and what
-    it doesn't. It cares strictly about the file format, that is a nested numpy
-    object, and of the data types. I expect many bugs to arise from improper 
-    converters that do not fully comply with the file format."""
+    """Converts [x, y, time, frame] table to [[[x1,y1], [x2,y2], ...], [t1, t2, ...], [f1, f2, ...]]] """
 
     if from_json:
         da = json.loads(f.read()) ## Load data
