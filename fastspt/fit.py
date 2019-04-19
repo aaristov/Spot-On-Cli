@@ -26,6 +26,65 @@ def pdist(m):
        x2 y2"""
     return ( (m[0,0]-m[1,0])**2+(m[0,1]-m[1,1])**2)**0.5
 
+def fit_kinetics(jump_hist,
+                 states=2,
+                 iterations=3,
+                 CDF=False,
+                 CDF1 = True,
+                 Frac_Bound = [0, 1],
+                 D_Free = [0.001, 1],
+                 D_Med = [0.001, 0.1],
+                 D_Bound = [0.0, 0.02],
+                 sigma_bound = [0.005, 0.1],
+                 dT=0.06,
+                 dZ=0.7,
+                 fitSigma=True,
+                 a=0.15716,
+                 b=0.20811,
+                 useZcorr=False):
+    
+    '''
+    A warp around fit.fit_jump_length_distribution.
+    Unfolds histograms, sets parameters and fits data.
+    
+    Returns:
+    lmfit.model.ModelResult
+    
+    '''
+    h1=jump_hist
+    if CDF1:
+        HistVecJumps = h1[2]
+        JumpProb = h1[3]
+        HistVecJumpsCDF = h1[0]
+        JumpProbCDF = h1[1]
+    else:
+        HistVecJumps = h1[0]
+        JumpProb = h1[1]
+        HistVecJumpsCDF = h1[0]
+        JumpProbCDF = h1[1]
+        
+    fit2states = {2 : True, 3 : False}
+    LB = [D_Free[0], D_Bound[0], Frac_Bound[0], sigma_bound[0]]  ## This line too
+    UB = [D_Free[1], D_Bound[1], Frac_Bound[1], sigma_bound[1]]  ## And this line
+
+    params = {'UB': UB,
+              'LB': LB,
+              'LocError': None, # Manually input the localization error in um: 35 nm = 0.035 um.
+              'iterations': 3, # Manually input the desired number of fitting iterations:
+              'dT': dT, # Time between frames in seconds
+              'dZ': dZ, # The axial illumination slice: measured to be roughly 700 nm
+              'ModelFit': [1,2][CDF],
+              'fit2states': fit2states[states],
+              'fitSigma': fitSigma,
+              'a': a,
+              'b': b,
+              'useZcorr': useZcorr
+    }
+
+    ## Perform the fit
+    fit_result = fit.fit_jump_length_distribution(JumpProb, JumpProbCDF, HistVecJumps, HistVecJumpsCDF, **params)
+    return fit_result
+
 ##
 ## ==== Main functions
 ##
