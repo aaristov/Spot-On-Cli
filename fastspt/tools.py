@@ -6,6 +6,9 @@
 ## ==== Imports
 import pickle, sys, scipy.io, os
 import numpy as np
+from fastspt import plot, fit
+from fastspt.fit import fit_kinetics
+
 
 ## ==== Sample dataset-related functions
 def list_sample_datasets(path):
@@ -48,3 +51,41 @@ def load_matlab_dataset_from_path(path):
     """Returns a dataset object from a Matlab file"""
     mat = scipy.io.loadmat(path)
     return np.asarray(mat['trackedPar'][0])
+
+
+def auto_fit(cell_spt, fit_params, plot_hist=False, plot_result=True ):
+    '''
+    Generates histograms and fits kinetic model according to intialization dictionary fit_params
+    
+    returns:
+    
+    lmfit.model.ModelResult
+    
+    '''
+    jump_histrogram = get_jump_length_histrogram(cell_spt, CDF=False, CDF1 = True)
+    
+    if plot_hist: plot_hist_jumps(jump_histrogram)
+        
+    fit_result = fit_kinetics(jump_histrogram,
+                             **fit_params)
+    
+    if plot_result: plot.plot_kinetics_fit(jump_hist=jump_histrogram,  
+                                            fit_result=fit_result, fit_params=fit_params)
+    
+    return fit_result
+    
+def get_jump_length_histrogram(cell_spt, CDF=False, CDF1 = True):
+    '''
+    Computes JumpProb, JumpProbCDF, HistVecJumps, HistVecJumpsCDF from tracks list.
+    '''
+    h1 = fit.compute_jump_length_distribution(cell_spt, CDF=CDF1, useEntireTraj=False)
+
+    print("Computation of jump lengths performed in {:.2f}s".format(h1[-1]['time']))
+    return h1
+
+
+def plot_hist_jumps(jump_histrogram):
+    HistVecJumps = jump_histrogram[2]
+    JumpProb = jump_histrogram[3]
+    plot.plot_histogram(HistVecJumps, JumpProb) ## Read the documentation of this function to learn how to populate all the 'na' fields
+    return True
