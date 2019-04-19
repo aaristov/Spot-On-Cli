@@ -47,11 +47,11 @@ def plot_kinetics_fit(jump_hist, fit_result:lmfit.model.ModelResult, fit_params:
     return True
 
 
-def plot_histogram(HistVecJumps, emp_hist, figsize=(18,8), HistVecJumpsCDF=None, sim_hist=None,
+def plot_histogram(HistVecJumps, emp_hist, HistVecJumpsCDF=None, sim_hist=None,
                    TimeGap=None, SampleName=None, CellNumb=None,
                    len_trackedPar=None, Min3Traj=None, CellLocs=None,
                    CellFrames=None, CellJumps=None, ModelFit=None,
-                   D_free=None, D_bound=None, F_bound=None):
+                   D_free=None, D_bound=None, F_bound=None, figsize=(18,8) ):
     """Function that plots an empirical histogram of jump lengths,
     with an optional overlay of simulated/theoretical histogram of 
     jump lengths"""
@@ -131,3 +131,6 @@ def plot_histogram(HistVecJumps, emp_hist, figsize=(18,8), HistVecJumpsCDF=None,
               locs_per_frame,
               CellJumps))
     plt.yticks([])
+    plt.show()
+
+    return True
