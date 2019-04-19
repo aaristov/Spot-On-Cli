@@ -9,7 +9,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_histogram(HistVecJumps, emp_hist, HistVecJumpsCDF=None, sim_hist=None,
+def plot_histogram(HistVecJumps, emp_hist, figsize=(18,8), HistVecJumpsCDF=None, sim_hist=None,
                    TimeGap=None, SampleName=None, CellNumb=None,
                    len_trackedPar=None, Min3Traj=None, CellLocs=None,
                    CellFrames=None, CellJumps=None, ModelFit=None,
@@ -55,6 +55,8 @@ def plot_histogram(HistVecJumps, emp_hist, HistVecJumpsCDF=None, sim_hist=None,
     cmap = plt.get_cmap('viridis')
     colour = [cmap(i) for i in np.linspace(0, 1, number)]
 
+    plt.figure(figsize=figsize)
+    
     for i in range(JumpProb.shape[0]-1, -1, -1):
         new_level = (i)*histogram_spacer
         colour_element = colour[i] #colour[round(i/size(JumpProb,1)*size(colour,1)),:]
