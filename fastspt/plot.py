@@ -9,6 +9,44 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+from fastspt import fit, plot
+import lmfit
+
+def plot_kinetics_fit(jump_hist, fit_result:lmfit.model.ModelResult, fit_params:dict, **kwargs) -> bool:
+    
+    h1=jump_hist
+
+    CDF1 = fit_params['CDF1']
+    if CDF1:
+        HistVecJumps = h1[2]
+        JumpProb = h1[3]
+        HistVecJumpsCDF = h1[0]
+        JumpProbCDF = h1[1]
+    else:
+        HistVecJumps = h1[0]
+        JumpProb = h1[1]
+        HistVecJumpsCDF = h1[0]
+        JumpProbCDF = h1[1]
+
+    ## Generate the PDF corresponding to the fitted parameters
+    y = fit.generate_jump_length_distribution(fit_result.params, 
+                                              JumpProb = JumpProbCDF, 
+                                              r=HistVecJumpsCDF,
+                                              LocError = fit_result.params['sigma'].value, 
+                                              dT = fit_params['dT'], 
+                                              dZ = fit_params['dZ'], 
+                                              a = fit_params['a'], 
+                                              b = fit_params['b'], 
+                                              norm=True, 
+                                              useZcorr=fit_params['useZcorr'])
+    ## Normalization does not work for PDF yet (see commented line in fastspt.py)
+    if CDF1:
+        y = y * float(len(HistVecJumpsCDF))/float(len(HistVecJumps))
+    plt.figure(figsize=(18,8)) # Initialize the plot
+    plot.plot_histogram(HistVecJumps, JumpProb, HistVecJumpsCDF, y, ) ## Read the documentation of this function to learn how to populate all the 'na' fields
+    return True
+
+
 def plot_histogram(HistVecJumps, emp_hist, figsize=(18,8), HistVecJumpsCDF=None, sim_hist=None,
                    TimeGap=None, SampleName=None, CellNumb=None,
                    len_trackedPar=None, Min3Traj=None, CellLocs=None,

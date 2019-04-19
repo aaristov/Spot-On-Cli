@@ -16,6 +16,7 @@ import time
 import lmfit
 import numpy as np
 from scipy.special import erfc
+from fastspt import fit
 
 ##
 ## ==== Auxiliary functions
@@ -401,7 +402,7 @@ def fit_jump_length_distribution(JumpProb, JumpProbCDF,
         
         ## See if the current fit is an improvement:
         if ssq2 < best_ssq2:
-            best_vals = out.params
+            #best_vals = out.params
             best_ssq2 = ssq2
             if verbose:
                 print('==================================================')
