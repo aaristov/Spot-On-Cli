@@ -1,14 +1,13 @@
 import sys
 
-from fastSPT import fit, tools
+from fastSPT import fit, tools, readers
 
-import parsers
 
 def gui_to_fastSPT_conversion(fn):
     """A test to make sure that the files we convert from the GUI
     format are usable for fastSPT"""
     with open(fn, 'r') as f:
-        cell = parsers.to_fastSPT(f)
+        cell = readers.to_fastSPT(f)
         fit.compute_jump_length_distribution(cell, CDF=True, useAllTraj=True)
         
 if __name__ == "__main__":
