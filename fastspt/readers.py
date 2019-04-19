@@ -102,7 +102,7 @@ def read_anders(fn, new_format=True):
 
 
 ## ==== Format for fastSPT
-def to_fastSPT(f, from_json=True):
+def to_fastSPT(f, from_json=False):
     """Converts [x, y, time, frame] table to [[[x1,y1], [x2,y2], ...], [t1, t2, ...], [f1, f2, ...]]] """
 
     if from_json:
