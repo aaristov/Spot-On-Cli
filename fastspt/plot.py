@@ -28,8 +28,12 @@ def plot_kinetics_fit(jump_hist, fit_result:lmfit.model.ModelResult, fit_params:
         HistVecJumpsCDF = h1[0]
         JumpProbCDF = h1[1]
 
+    states = fit_params['states']
+    fit2states_dict = {2 : True, 3 : False}
+    fit2states = fit2states_dict[states]
+
     ## Generate the PDF corresponding to the fitted parameters
-    y = fit.generate_jump_length_distribution(fit_result.params, 
+    y = fit.generate_jump_length_distribution(fitparams=fit_result.params, 
                                               JumpProb = JumpProbCDF, 
                                               r=HistVecJumpsCDF,
                                               LocError = fit_result.params['sigma'].value, 
@@ -37,6 +41,7 @@ def plot_kinetics_fit(jump_hist, fit_result:lmfit.model.ModelResult, fit_params:
                                               dZ = fit_params['dZ'], 
                                               a = fit_params['a'], 
                                               b = fit_params['b'], 
+                                              fit2states=fit2states,
                                               norm=True, 
                                               useZcorr=fit_params['useZcorr'])
     ## Normalization does not work for PDF yet (see commented line in fastspt.py)
