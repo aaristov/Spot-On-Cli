@@ -4,3 +4,4 @@ matplotlib
 xmltodict
 pandas
 xlwt
+tqdm
