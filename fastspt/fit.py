@@ -74,9 +74,9 @@ def fit_kinetics(jump_hist,
     if states == 2:
         LB = [D_Free[0], D_Bound[0], Frac_Bound[0], sigma_bound[0]] 
         UB = [D_Free[1], D_Bound[1], Frac_Bound[1], sigma_bound[1]] 
-    elif states == 3:
-        LB = [D_Free[0], D_Med[0], D_Bound[0], Frac_Bound[0], Frac_Bound[0]]
-        UB = [D_Free[1], D_Med[1], D_Bound[1], Frac_Bound[1], Frac_Bound[1]]
+    elif states == 3: 
+        LB = [D_Free[0], D_Med[0], D_Bound[0], Frac_Bound[0], Frac_Bound[0], sigma_bound[0]]
+        UB = [D_Free[1], D_Med[1], D_Bound[1], Frac_Bound[1], Frac_Bound[1], sigma_bound[1]]
 
     # LB = {2 : [D_Free[0], D_Bound[0], Frac_Bound[0], sigma_bound[0]], 
     #       3 : [D_Free[0], D_Med[0], D_Bound[0], Frac_Fast[0], Frac_Bound[0]])
@@ -84,7 +84,7 @@ def fit_kinetics(jump_hist,
     # UB = {2: [D_Free[1], D_Bound[1], Frac_Bound[1], sigma_bound[1]],
     #       3: [D_Free[1], D_Med[1], D_Bound[1], Frac_Fast[1], Frac_Bound[1]]}
 
-    fit_sigma = {2: True, 3: False}
+    #fit_sigma = {2: True, 3: False}
 
     try:
         params = {'UB': UB,
@@ -95,7 +95,7 @@ def fit_kinetics(jump_hist,
                 'dZ': dZ, # The axial illumination slice: measured to be roughly 700 nm
                 'ModelFit': [1,2][CDF],
                 'fit2states': fit2states[states],
-                'fitSigma': fit_sigma[states],
+                'fitSigma': fit_sigma,
                 'a': a,
                 'b': b,
                 'useZcorr': useZcorr
