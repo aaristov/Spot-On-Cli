@@ -105,21 +105,21 @@ for rep in reps:
 
 ## Generate a dictionary of parameters
 fit_params = dict(states=3,
-                 iterations=3,
+                 iterations=1,
                  CDF=False,
                  CDF1 = True,
                  Frac_Bound = [0, 1],
-                 D_Free = [0.001, 1],
-                 D_Med = [0.001, 0.1],
-                 D_Bound = [0.0, 0.02],
+                 D_Free = [0.01, 1.],
+                 D_Med = [0.005, 0.1],
+                 D_Bound = [0.0, 0.005],
+                 sigma = 0.02,
                  sigma_bound = [0.005, 0.1],
+                 fit_sigma=True,
                  dT=0.06,
                  dZ=0.7,
-                 fitSigma=True,
                  a=0.15716,
                  b=0.20811,
                  useZcorr=False ) 
-
 
 def my_fit(rep):
     
@@ -135,20 +135,20 @@ reps_fits = list(map(my_fit, reps))
 
 
 # In[95]:
-
+print(reps_fits)
 
 #get stats
-fit_stats = pd.DataFrame(columns=fit_result.best_values.keys())
-
+fit_stats = pd.DataFrame(columns=sum([list(reps_fits[0].best_values.keys()), ['chi2']], []))
 for i, fit_result in enumerate(reps_fits):
-    fit_stats.loc[f'rep {i+1}'] = list(fit_result.best_values.values())
+    fit_stats.loc[f'rep {i+1}'] = sum([list(fit_result.best_values.values()), [fit_result.chisqr]], [])
+    # fit_stats.loc[f'rep {i+1}', 'chi2'] = np.round(fit_result.chisqr, 4)
 
 fit_stats.loc['mean'] = fit_stats.mean(axis=0)
 fit_stats.loc['std'] = fit_stats.std(axis=0)
 
 fit_stats.to_json(data_path + '.stats.json')
 
-fit_stats
+print(fit_stats)
 #fit_stats.to_excel(path_oe + '.stats.xls')
 
 
