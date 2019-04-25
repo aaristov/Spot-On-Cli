@@ -264,7 +264,7 @@ def fit_jump_length_distribution(JumpProb, JumpProbCDF,
                                  verbose=True, init=None, useZcorr=True,
                                  solverparams = {'ftol':1e-20,
                                                  'xtol': 1e-20,
-                                                 'maxfev': 100000,
+                                                 'maxfev': 1000,
                                              }):
     """Fits a kinetic model to an empirical jump length distribution.
     This applies a non-linear least squared fitting procedure.
@@ -279,14 +279,18 @@ def fit_jump_length_distribution(JumpProb, JumpProbCDF,
         for i in range(JumpProb.shape[0]): # 1:size(JumpProb,1)
             ModelHistVecJumps[i,:] = HistVecJumps
         y = JumpProb
-        x = np.repeat(HistVecJumps[:-1], JumpProb.shape[1])
+        h = HistVecJumps
+        hh = np.vstack([h[:-1], h[1:]]).mean(axis=0)
+        x = np.repeat(hh, JumpProb.shape[1])
             
     elif ModelFit == 2:
         ModelHistVecJumps = np.zeros((JumpProb.shape[0], len(HistVecJumpsCDF)))
         for i in range(JumpProb.shape[0]): # 1:size(JumpProb,1)
             ModelHistVecJumps[i,:] = HistVecJumpsCDF
         y = JumpProbCDF
-        x = np.repeat(HistVecJumpsCDF[:-1], JumpProbCDF.shape[1]) 
+        h = HistVecJumpsCDF
+        hh = np.vstack([h[:-1], h[1:]]).mean(axis=0)
+        x = np.repeat(hh, JumpProbCDF.shape[1]) 
 
     params = {"dT": dT,
               "dZ": dZ,
