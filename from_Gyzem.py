@@ -138,11 +138,10 @@ reps_fits = list(map(my_fit, reps))
 print(reps_fits)
 
 #get stats
-fit_stats = pd.DataFrame(columns=sum([list(reps_fits[0].best_values.keys()), ['chi2']], []))
+fit_stats = pd.DataFrame(columns=list(reps_fits[0].best_values.keys()) + ['chi2'])
 for i, fit_result in enumerate(reps_fits):
-    fit_stats.loc[f'rep {i+1}'] = sum([list(fit_result.best_values.values()), [fit_result.chisqr]], [])
-    # fit_stats.loc[f'rep {i+1}', 'chi2'] = np.round(fit_result.chisqr, 4)
-
+    fit_stats.loc[f'rep {i+1}'] = list(fit_result.best_values.values()) + [fit_result.chisqr]
+    
 fit_stats.loc['mean'] = fit_stats.mean(axis=0)
 fit_stats.loc['std'] = fit_stats.std(axis=0)
 
