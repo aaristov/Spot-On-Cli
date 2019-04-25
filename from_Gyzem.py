@@ -80,16 +80,12 @@ from glob import glob
 
 data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/*.mat')
 
-
-# In[71]:
-
-
 data_paths
 
 
 # In[91]:
 
-data_path = data_paths[4]
+data_path = data_paths[0]
 
 
 # In[92]:
@@ -116,7 +112,7 @@ for rep in reps:
 
 
 ## Generate a dictionary of parameters
-fit_params = dict(states=3,
+fit_params = dict(states=2,
                  iterations=1,
                  CDF=False,
                  CDF1 = True,
