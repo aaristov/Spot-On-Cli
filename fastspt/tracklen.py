@@ -4,6 +4,8 @@ import numpy as np
 def get_track_lengths_dist(cell, plot=True):
     hist, bins = get_hist(cell)
     fit_result, popt = fit_exponent(hist, bins)
+    a, c, d = popt
+    print(f'Fit result: {a:.2f} * e^(-x/{c:.2f}) + {d:.2f}')
     if plot:
         plot_hist_fit(hist, bins, fit_result, popt)
     return True
@@ -31,8 +33,8 @@ def fit_exponent(hist, bins):
 
 def plot_hist_fit(hist, bins, fit_result, popt):
     a, c, d = popt
-    print(len(bins), len(hist))
-    print(bins.shape, hist.shape)
+    # print(len(bins), len(hist))
+    # print(bins.shape, hist.shape)
     plt.bar(bins, hist, fill=None, label=f'Weighted mean = {np.average(bins, weights=hist):.1f}')
     plt.plot(bins, fit_result, label=f'{a:.2f}*np.exp(-x/{c:.2f})+{d:.2f}')
     plt.title('Track length distribution')
