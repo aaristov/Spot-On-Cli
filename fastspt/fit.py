@@ -90,7 +90,7 @@ def fit_kinetics(jump_hist,
         params = {'UB': UB,
                 'LB': LB,
                 'LocError': sigma, # Manually input the localization error in um: 35 nm = 0.035 um.
-                'iterations': 3, # Manually input the desired number of fitting iterations:
+                'iterations': iterations, # Manually input the desired number of fitting iterations:
                 'dT': dT, # Time between frames in seconds
                 'dZ': dZ, # The axial illumination slice: measured to be roughly 700 nm
                 'ModelFit': [1,2][CDF],
