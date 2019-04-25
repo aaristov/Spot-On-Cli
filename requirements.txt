@@ -3,4 +3,5 @@ lmfit>=0.9.7
 matplotlib
 xmltodict
 pandas
-
+xlwt
+tqdm

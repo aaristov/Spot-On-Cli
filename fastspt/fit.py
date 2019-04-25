@@ -17,6 +17,9 @@ import lmfit
 import numpy as np
 from scipy.special import erfc
 from fastspt import fit
+import logging
+
+logger = logging.getLogger(__name__)
 
 ##
 ## ==== Auxiliary functions
@@ -36,10 +39,11 @@ def fit_kinetics(jump_hist,
                  D_Free = [0.001, 1],
                  D_Med = [0.001, 0.1],
                  D_Bound = [0.0, 0.02],
+                 sigma = 0.020,
                  sigma_bound = [0.005, 0.1],
+                 fit_sigma=True,
                  dT=0.06,
                  dZ=0.7,
-                 fitSigma=True,
                  a=0.15716,
                  b=0.20811,
                  useZcorr=False):
@@ -63,25 +67,43 @@ def fit_kinetics(jump_hist,
         JumpProb = h1[1]
         HistVecJumpsCDF = h1[0]
         JumpProbCDF = h1[1]
-        
+    
+    
     fit2states = {2 : True, 3 : False}
-    LB = [D_Free[0], D_Bound[0], Frac_Bound[0], sigma_bound[0]]  ## This line too
-    UB = [D_Free[1], D_Bound[1], Frac_Bound[1], sigma_bound[1]]  ## And this line
 
-    params = {'UB': UB,
-              'LB': LB,
-              'LocError': None, # Manually input the localization error in um: 35 nm = 0.035 um.
-              'iterations': 3, # Manually input the desired number of fitting iterations:
-              'dT': dT, # Time between frames in seconds
-              'dZ': dZ, # The axial illumination slice: measured to be roughly 700 nm
-              'ModelFit': [1,2][CDF],
-              'fit2states': fit2states[states],
-              'fitSigma': fitSigma,
-              'a': a,
-              'b': b,
-              'useZcorr': useZcorr
-    }
+    if states == 2:
+        LB = [D_Free[0], D_Bound[0], Frac_Bound[0], sigma_bound[0]] 
+        UB = [D_Free[1], D_Bound[1], Frac_Bound[1], sigma_bound[1]] 
+    elif states == 3:
+        LB = [D_Free[0], D_Med[0], D_Bound[0], Frac_Bound[0], Frac_Bound[0]]
+        UB = [D_Free[1], D_Med[1], D_Bound[1], Frac_Bound[1], Frac_Bound[1]]
 
+    # LB = {2 : [D_Free[0], D_Bound[0], Frac_Bound[0], sigma_bound[0]], 
+    #       3 : [D_Free[0], D_Med[0], D_Bound[0], Frac_Fast[0], Frac_Bound[0]])
+
+    # UB = {2: [D_Free[1], D_Bound[1], Frac_Bound[1], sigma_bound[1]],
+    #       3: [D_Free[1], D_Med[1], D_Bound[1], Frac_Fast[1], Frac_Bound[1]]}
+
+    fit_sigma = {2: True, 3: False}
+
+    try:
+        params = {'UB': UB,
+                'LB': LB,
+                'LocError': sigma, # Manually input the localization error in um: 35 nm = 0.035 um.
+                'iterations': 3, # Manually input the desired number of fitting iterations:
+                'dT': dT, # Time between frames in seconds
+                'dZ': dZ, # The axial illumination slice: measured to be roughly 700 nm
+                'ModelFit': [1,2][CDF],
+                'fit2states': fit2states[states],
+                'fitSigma': fit_sigma[states],
+                'a': a,
+                'b': b,
+                'useZcorr': useZcorr
+        }
+    except KeyError:
+        logger.error(f'fit_kinetics: wrong states parameters {states}, expected 2 or 3')
+        return False
+    
     ## Perform the fit
     fit_result = fit.fit_jump_length_distribution(JumpProb, JumpProbCDF, HistVecJumps, HistVecJumpsCDF, **params)
     return fit_result
@@ -94,7 +116,8 @@ def compute_jump_length_distribution(trackedPar,
                                      GapsAllowed=1, JumpsToConsider=4,
                                      MaxJump=1.25, BinWidth=0.010,
                                      useAllTraj=None):
-    """Function that takes a series of translocations and computes an histogram of
+    """
+    Function that takes a series of translocations and computes an histogram of
     jump lengths. Returns both
 
     Arguments:
@@ -110,7 +133,7 @@ def compute_jump_length_distribution(trackedPar,
     - useAllTraj (bool): DEPRECATED alias for useEntireTraj
 
     Returns:
-    - An histogram at various \Delta t values.
+    - An histogram at various Delta t values.
     """
 
     if useAllTraj == None:
@@ -542,7 +565,7 @@ def simulate_jump_length_distribution(parameter_guess, JumpProb,
                     Binned_y_PDF[i,j] = y[i,minIndex:maxIndex].mean()
                     
         for i in range(JumpProb.shape[0]): #1:size(JumpProb,1) ## Normalize
-            Binned_y_PDF[i,:] = Binned_y_PDF[i,:]/sum(Binned_y_PDF[i,:]);
+            Binned_y_PDF[i,:] = Binned_y_PDF[i,:]/sum(Binned_y_PDF[i,:])
         Binned_y = Binned_y_PDF #You want to fit to a histogram, so no need to calculate the CDF
         return Binned_y
 
@@ -568,8 +591,12 @@ def generate_jump_length_distribution(fitparams, JumpProb, r,
                                       LocError, dT, dZ, a, b, fit2states=True,
                                       norm=False, useZcorr=True):
     """
-    This function has no docstring. This is bad
+    Generates jump lengths distribution.
+    
+    Paramerters:
+    fitparams (lmfit.model.ModelResult.params): 
     """
+    
     if fit2states:
         D_free = fitparams['D_free']
         D_bound = fitparams['D_bound']

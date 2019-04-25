@@ -52,7 +52,8 @@ def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
         
     for i, ii in tqdm(zip(ids[:-1], ids[1:]), disable=True):
         track = xyft[i:ii]
-        if len(track) > 3:
+        if len(track) >= min_len:
             tracks.append(track)
+            
     print(f'{len(tracks)}  tracks ')
     return tracks
