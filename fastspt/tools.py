@@ -53,7 +53,7 @@ def load_matlab_dataset_from_path(path):
     return np.asarray(mat['trackedPar'][0])
 
 
-def auto_fit(cell_spt, fit_params, plot_hist=False, plot_result=True ):
+def auto_fit(cell_spt, plot_hist=False, plot_result=True, **fit_params ):
     '''
     Generates histograms and fits kinetic model according to intialization dictionary fit_params
     
@@ -62,7 +62,7 @@ def auto_fit(cell_spt, fit_params, plot_hist=False, plot_result=True ):
     lmfit.model.ModelResult
     
     '''
-    jump_histrogram = get_jump_length_histrogram(cell_spt, CDF=False, CDF1 = True)
+    jump_histrogram = get_jump_length_histrogram(cell_spt, **fit_params)
     
     if plot_hist: plot_hist_jumps(jump_histrogram)
         
@@ -70,11 +70,11 @@ def auto_fit(cell_spt, fit_params, plot_hist=False, plot_result=True ):
                              **fit_params)
     
     if plot_result: plot.plot_kinetics_fit(jump_hist=jump_histrogram,  
-                                            fit_result=fit_result, fit_params=fit_params)
+                                            fit_result=fit_result, **fit_params)
     
     return fit_result
     
-def get_jump_length_histrogram(cell_spt, CDF=False, CDF1 = True):
+def get_jump_length_histrogram(cell_spt, CDF=False, CDF1 = True, **kwargs):
     '''
     Computes JumpProb, JumpProbCDF, HistVecJumps, HistVecJumpsCDF from tracks list.
     '''
