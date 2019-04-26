@@ -45,7 +45,7 @@ def plot_kinetics_fit(jump_hist,
     ## Normalization does not work for PDF yet (see commented line in fastspt.py)
     if CDF1:
         y = y * float(len(HistVecJumpsCDF))/float(len(HistVecJumps))
-    plt.figure(figsize=(18,8)) # Initialize the plot
+    #plt.figure(figsize=(18,8)) # Initialize the plot
     plot.plot_histogram(HistVecJumps, JumpProb, HistVecJumpsCDF, y, ) ## Read the documentation of this function to learn how to populate all the 'na' fields
     return True
 
