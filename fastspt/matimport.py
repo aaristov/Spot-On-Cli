@@ -4,7 +4,13 @@ import os
 import numpy as np
 from scipy.io import loadmat
 from tqdm.auto import tqdm
-from fastspt import readers
+from fastspt import readers, tracklen, tools
+import pandas as pd
+try:
+    from IPython.core.display import display
+except ImportError:
+    display = print
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -69,6 +75,93 @@ def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     print(f'{len(tracks)}  tracks ')
     return tracks
 
+def analyse_mat_file(data_path,
+                     pixel_size_um=0.075,
+                     exposure_ms=60,
+                     min_len=3,
+                     states=3,
+                     iterations=1,
+                     CDF=False,
+                     CDF1 = True,
+                     Frac_Bound = [0, 1],
+                     D_Free = [0.015, 1.],
+                     D_Med = [0.005, 0.015],
+                     D_Bound = [0.0, 0.005],
+                     sigma = 0.02,
+                     sigma_bound = [0.005, 0.1],
+                     fit_sigma=True,
+                     save_stats=True,
+                     plot_hist=False, 
+                     plot_result=True,
+                     plot_track_len=False,
+                     **kwargs
+                     ):
+    
+    print(f'Analysing {data_path}')
+
+    fit_params = dict(pixel_size_um=pixel_size_um,
+                     exposure_ms=exposure_ms,
+                     min_len=min_len,
+                     states=states,
+                     iterations=iterations,
+                     CDF=CDF,
+                     CDF1 = CDF1,
+                     Frac_Bound = Frac_Bound,
+                     D_Free = D_Free,
+                     D_Med = D_Med,
+                     D_Bound = D_Bound,
+                     sigma = sigma,
+                     sigma_bound = sigma_bound,
+                     fit_sigma=fit_sigma,
+                     dT=exposure_ms / 1000.,
+                     save_stats=save_stats,
+                     plot_hist=plot_hist, 
+                     plot_result=plot_result,
+                     plot_track_len=plot_track_len)
+
+    all_exp = read_gizem_mat(data_path)
+    if all_exp:
+        reps = concat_reps(all_exp, min_len=min_len, exposure_ms=exposure_ms, pixel_size_um=pixel_size_um)
+    for rep in reps:
+        tracklen.get_track_lengths_dist(rep, plot=plot_track_len)
+        
+    def my_fit(rep):
+    
+        cell_spt = readers.to_fastSPT(rep, from_json=False)
+        fit_result = tools.auto_fit(cell_spt,
+                                    **fit_params)
+        return fit_result
+
+    reps_fits = list(map(my_fit, reps))
+    stats = get_stats(reps_fits, save_path=data_path)
+    return stats
+
+
+
+def analyse_mat_files(*path_list, exposure_ms=60., pixel_size_um=0.075, **kwargs):
+    print(path_list)
+    stats = {}
+    for data_path in path_list[0]:
+        stats[data_path] = analyse_mat_file(data_path)
+    return stats
+
+def get_stats(reps_fits, save_path=None, print_stats=True, save_fmt='json', suffix='.stats'):
+    #get stats
+    fit_stats = pd.DataFrame(columns=list(reps_fits[0].best_values.keys()) + ['chi2'])
+    
+    for i, fit_result in enumerate(reps_fits):
+        fit_stats.loc[f'rep {i+1}'] = list(fit_result.best_values.values()) + [fit_result.chisqr]
+
+    fit_stats.loc['mean'] = fit_stats.mean(axis=0)
+    fit_stats.loc['std'] = fit_stats.std(axis=0)
+    
+    if save_path:
+        path = f'{save_path}{suffix}.{save_fmt}'
+        getattr(fit_stats, 'to_' + save_fmt)(path)
+        logger.info(f'Saving stats table to {path}')
+    if print_stats:
+        display(fit_stats)
+    return fit_stats
     
 def _read_gizem_mat(path):
     '''
