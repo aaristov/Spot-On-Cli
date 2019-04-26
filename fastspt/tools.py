@@ -1,3 +1,5 @@
+# TODO: Paramters of fit are ignores when calling module from comman line. In iPython works fine.
+
 ## fastSPT_tools
 ## Some tools for the fastSPT package
 ## By MW, GPLv3+
@@ -63,7 +65,7 @@ def auto_fit(cell_spt, **fit_params ):
     
     '''
     
-    
+
     jump_histrogram = get_jump_length_histrogram(cell_spt, **fit_params)
     
     if fit_params['plot_hist']: plot_hist_jumps(jump_histrogram)
