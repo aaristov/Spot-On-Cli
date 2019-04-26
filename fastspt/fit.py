@@ -265,8 +265,8 @@ def fit_jump_length_distribution(JumpProb, JumpProbCDF,
                                  LocError, iterations, dT, dZ, ModelFit, a, b,
                                  fit2states=True, fitSigma=False,
                                  verbose=True, init=None, useZcorr=True,
-                                 solverparams = {'ftol':1e-10,
-                                                 'xtol': 1e-10,
+                                 solverparams = {'ftol':1e-20,
+                                                 'xtol': 1e-20,
                                                  'maxfev': 1000,
                                              }):
     """Fits a kinetic model to an empirical jump length distribution.
