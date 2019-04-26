@@ -13,7 +13,7 @@ except ImportError:
 
 import logging
 logger = logging.getLogger(__name__)
-
+from fastspt.__main__ import pprint
 
 def read_gizem_mat(path):
     from mat4py import loadmat
@@ -118,7 +118,7 @@ def analyse_mat_file(data_path,
                      plot_hist=plot_hist, 
                      plot_result=plot_result,
                      plot_track_len=plot_track_len)
-
+    pprint(fit_params)
     all_exp = read_gizem_mat(data_path)
     if all_exp:
         reps = concat_reps(all_exp, min_len=min_len, exposure_ms=exposure_ms, pixel_size_um=pixel_size_um)
