@@ -7,6 +7,10 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+def pprint(d:dict):
+    for k, i in d.items():
+        print(f'{k} : {i}')
+
 def main(args=None, callback=None):
     
     def log(msg=None, level='info'):
@@ -23,6 +27,7 @@ def main(args=None, callback=None):
 
     def info(msg):
         return log(msg, level='info')
+
 
     #info('main')
 
@@ -49,11 +54,14 @@ def main(args=None, callback=None):
             args = parser.parse_args(args)
         else:
             args = parser.parse_args()
-        debug(args)
+
     except TypeError:
         error(f'Wrong args while parsing: {args}')
         
         exit(1)
+
+    
+
     if not args.command:
         error('No command, exiting')
         #parser.print_help()
@@ -64,7 +72,9 @@ def main(args=None, callback=None):
 
         try:
             params = json.load(open(args.config))
-            debug(params)
+            info('Current configuration:')
+            pprint(params)
+
         except json.JSONDecodeError:
             error('Bad configuration')
             exit(2)
@@ -76,9 +86,13 @@ def main(args=None, callback=None):
                 error(f'bad config {params}')
                 exit(2)
             else:
-                info('Start analysis')
-        stats = mt.analyse_mat_files(fnames, **params)
-        exit(0)
+                print('Start analysis')
+        try:
+            mt.analyse_mat_files(fnames, **params)
+            exit(0)
+        except KeyboardInterrupt:
+            info('User interrupt, exiting')
+            exit(1)
     else:
         pass
 
