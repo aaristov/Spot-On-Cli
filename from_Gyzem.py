@@ -4,21 +4,35 @@
 # A short introduction to fast SPT modeling
 # -----------------------------------------
 # 
-# This notebook presents a short introduction to the modeling of fast single particle tracking datasets. 
-# The methodology, together with examples of biological relevance, can be found at:
+# This notebook presents a short introduction to the modeling of 
+# fast single particle tracking datasets. 
+# The methodology, together with examples of biological 
+# relevance, can be found at:
 # 
-# > Hansen, Anders S., Iryna Pustova, Claudia Cattoglio, Robert Tjian, and Xavier Darzacq. “CTCF and Cohesin Regulate Chromatin Loop Stability with Distinct Dynamics.” bioRxiv, 2016, 093476.
+# > Hansen, Anders S., Iryna Pustova, Claudia Cattoglio, 
+# Robert Tjian, and Xavier Darzacq. “CTCF and Cohesin Regulate 
+# Chromatin Loop Stability with Distinct Dynamics.” 
+# bioRxiv, 2016, 093476.
 # 
-# This package includes several sample datasets, that will be used by this notebook. Make sure that they can be found by Python.
+# This package includes several sample datasets, that will be 
+# used by this notebook. Make sure that they can be found by Python.
 
 # ## 1. Loading of a dataset
 # 
-# To help us with basic and repeated tasks such as dataset loading, we created a small library, `fastSPT_tools` that contain several helper functions that we will use all across this tutorial. We thus need to import it by typing `import fastSPT_tools`.
+# To help us with basic and repeated tasks such as dataset loading, 
+# we created a small library, `fastSPT_tools` that contain 
+# several helper functions that we will use all across this tutorial. 
+# We thus need to import it by typing `import fastSPT_tools`.
 # 
-# One of the functions list the available datasets: `list_sample_datasets(path)`. Let's first see what datasets we can get. Then, we will use the `load_dataset(path, dataset_id, cells)` function to load the relevant dataset. This latter function can either load one single cell or a series of cells (identified by their id).
+# One of the functions list the available datasets: 
+# `list_sample_datasets(path)`. Let's first see what datasets 
+# we can get. Then, we will use the `load_dataset(path, dataset_id, 
+# cells)` function to load the relevant dataset. This latter function 
+# can either load one single cell or a series of cells 
+# (identified by their id).
 
 # In[1]:
-
+# jlkbli
 
 import sys
 from tqdm.autonotebook import tqdm
@@ -66,20 +80,14 @@ from glob import glob
 
 data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/*.mat')
 
-
-# In[71]:
-
-
 data_paths
 
 
 # In[91]:
 
+data_path = data_paths[5]
 
-data_path = data_paths[0]
 print(data_path)
-
-
 # In[92]:
 
 
@@ -104,7 +112,7 @@ for rep in reps:
 
 
 ## Generate a dictionary of parameters
-fit_params = dict(states=3,
+fit_params = dict(states=2,
                  iterations=1,
                  CDF=False,
                  CDF1 = True,
@@ -149,8 +157,3 @@ fit_stats.to_json(data_path + '.stats.json')
 
 print(fit_stats)
 #fit_stats.to_excel(path_oe + '.stats.xls')
-
-
-# In[65]:
-#pd.read_json(r"Z:/Andrey/fromGizem/2019-04-18-PBP2-tracks/PBP2OverExpforAndrey.mat.stats.json",)
-
