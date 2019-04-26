@@ -46,7 +46,8 @@ def fit_kinetics(jump_hist,
                  dZ=0.7,
                  a=0.15716,
                  b=0.20811,
-                 useZcorr=False):
+                 useZcorr=False,
+                 **kwargs):
     
     '''
     A warp around fit.fit_jump_length_distribution.
@@ -593,28 +594,40 @@ def simulate_jump_length_distribution(parameter_guess, JumpProb,
 
     return Binned_y
 
-def generate_jump_length_distribution(fitparams, JumpProb, r,
-                                      LocError, dT, dZ, a, b, fit2states=True,
-                                      norm=False, useZcorr=True):
+def generate_jump_length_distribution(fit_results, 
+                                      JumpProb, 
+                                      HistVecJumps,
+                                      fit2states=True,
+                                      norm=False, 
+                                      useZcorr=True,
+                                      exposure_ms=60,
+                                      dZ=0.7,
+                                      a=0.15716,
+                                      b=0.20811,
+                                      **kwargs):
     """
     Generates jump lengths distribution.
     
     Paramerters:
-    fitparams (lmfit.model.ModelResult.params): 
+    fit_results (lmfit.model.ModelResult.params): 
     """
     
     if fit2states:
-        D_free = fitparams['D_free']
-        D_bound = fitparams['D_bound']
-        F_bound = fitparams['F_bound']
+        D_free = fit_results['D_free']
+        D_bound = fit_results['D_bound']
+        F_bound = fit_results['F_bound']
     else:
-        D_fast = fitparams['D_fast']
-        D_med = fitparams['D_med']
-        D_bound = fitparams['D_bound']
-        F_fast = fitparams['F_fast']
-        F_bound = fitparams['F_bound']
+        D_fast = fit_results['D_fast']
+        D_med = fit_results['D_med']
+        D_bound = fit_results['D_bound']
+        F_fast = fit_results['F_fast']
+        F_bound = fit_results['F_bound']
 
-    y = np.zeros((JumpProb.shape[0], r.shape[0]))
+    dT = exposure_ms / 1000. 
+    LocError = fit_results['sigma'] 
+                                              
+
+    y = np.zeros((JumpProb.shape[0], HistVecJumps.shape[0]))
     #Z_corr = np.zeros(JumpProb.shape[0]) # Assume ABSORBING BOUNDARIES
 
     # Calculate the axial Z-correction
@@ -636,11 +649,11 @@ def generate_jump_length_distribution(fitparams, JumpProb, r,
 
         if fit2states:
             y[iterator,:] = _compute_2states(D_free, D_bound, F_bound,
-                                             curr_dT, r, DeltaZ_use, LocError, useZcorr)
+                                             curr_dT, HistVecJumps, DeltaZ_use, LocError, useZcorr)
         else:
             y[iterator,:] = _compute_3states(D_fast, D_med, D_bound,
                                              F_fast, F_bound,
-                                             curr_dT, r, DeltaZ_useFAST,
+                                             curr_dT, HistVecJumps, DeltaZ_useFAST,
                                              DeltaZ_useMED, LocError, useZcorr)
 
         if norm:
