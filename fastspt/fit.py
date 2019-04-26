@@ -77,6 +77,8 @@ def fit_kinetics(jump_hist,
     elif states == 3: 
         LB = [D_Free[0], D_Med[0], D_Bound[0], Frac_Bound[0], Frac_Bound[0], sigma_bound[0]]
         UB = [D_Free[1], D_Med[1], D_Bound[1], Frac_Bound[1], Frac_Bound[1], sigma_bound[1]]
+    else:
+        raise ValueError(f'Wrong number of states {states}, expected 2 or 3')
 
     # LB = {2 : [D_Free[0], D_Bound[0], Frac_Bound[0], sigma_bound[0]], 
     #       3 : [D_Free[0], D_Med[0], D_Bound[0], Frac_Fast[0], Frac_Bound[0]])
