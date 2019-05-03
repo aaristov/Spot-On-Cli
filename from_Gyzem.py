@@ -52,12 +52,12 @@ from glob import glob
 
 # In[70]:
 
-data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/S*.mat')
+data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/*forSpotOn*.mat')
 data_paths
 
 # In[71]:
-
-data_path = data_paths[0]
+# 1 2 3 5
+data_path = data_paths[2]
 
 print(data_path)
 # In[92]:
