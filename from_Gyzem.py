@@ -66,7 +66,7 @@ print(data_path)
 all_exp = matimport.read_gizem_mat(data_path)
 print(all_exp)
 #cell4 = matimport.concat_all(all_exp, exposure_ms=60., pixel_size_um=0.075)
-reps = matimport.concat_reps(all_exp, exposure_ms=60., pixel_size_um=1)#0.075) #075
+reps = matimport.concat_reps(all_exp, exposure_ms=60., pixel_size_um=0.075) #075
 
 
 # # 2. Track lengths analysis
