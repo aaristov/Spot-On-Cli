@@ -1,35 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# A short introduction to fast SPT modeling
-# -----------------------------------------
-# 
-# This notebook presents a short introduction to the modeling of 
-# fast single particle tracking datasets. 
-# The methodology, together with examples of biological 
-# relevance, can be found at:
-# 
 # > Hansen, Anders S., Iryna Pustova, Claudia Cattoglio, 
 # Robert Tjian, and Xavier Darzacq. “CTCF and Cohesin Regulate 
 # Chromatin Loop Stability with Distinct Dynamics.” 
 # bioRxiv, 2016, 093476.
-# 
-# This package includes several sample datasets, that will be 
-# used by this notebook. Make sure that they can be found by Python.
-
-# ## 1. Loading of a dataset
-# 
-# To help us with basic and repeated tasks such as dataset loading, 
-# we created a small library, `fastSPT_tools` that contain 
-# several helper functions that we will use all across this tutorial. 
-# We thus need to import it by typing `import fastSPT_tools`.
-# 
-# One of the functions list the available datasets: 
-# `list_sample_datasets(path)`. Let's first see what datasets 
-# we can get. Then, we will use the `load_dataset(path, dataset_id, 
-# cells)` function to load the relevant dataset. This latter function 
-# can either load one single cell or a series of cells 
-# (identified by their id).
 
 # In[1]:
 # jlkbli
@@ -66,8 +40,8 @@ print("Using fastspt version {}".format(fs.__version__))
 import os
 os.getcwd()
 
-xml_path = r"movie_continuos_exp_60ms_561_50W_405_12_Tracks_filter_min_intensity.xml"
-path_wt = r"/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/WTforAndrey.mat"
+# xml_path = r"movie_continuos_exp_60ms_561_50W_405_12_Tracks_filter_min_intensity.xml"
+# path_wt = r"/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/WTforAndrey.mat"
 #path_oe = r"Z:\Andrey\fromGizem\2019-04-18-PBP2-tracks\PBP2OverExpforAndrey.mat"
 
 # In[67]:
@@ -78,22 +52,21 @@ from glob import glob
 
 # In[70]:
 
-data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/*.mat')
-
+data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/S*.mat')
 data_paths
 
+# In[71]:
 
-# In[91]:
-
-data_path = data_paths[5]
+data_path = data_paths[0]
 
 print(data_path)
 # In[92]:
 
 
 all_exp = matimport.read_gizem_mat(data_path)
+print(all_exp)
 #cell4 = matimport.concat_all(all_exp, exposure_ms=60., pixel_size_um=0.075)
-reps = matimport.concat_reps(all_exp, exposure_ms=60., pixel_size_um=0.075)
+reps = matimport.concat_reps(all_exp, exposure_ms=60., pixel_size_um=0.075) #075
 
 
 # # 2. Track lengths analysis
@@ -137,7 +110,6 @@ def my_fit(rep):
                                 plot_hist=False,
                                 plot_result=True)
     return fit_result
-print('geldi')
 
 reps_fits = list(map(my_fit, reps))
 
