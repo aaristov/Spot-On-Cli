@@ -16,7 +16,7 @@ def plot_kinetics_fit(jump_hist,
                       fit_result:lmfit.model.ModelResult, 
                       CDF1=True,
                       states=2, 
-                      **kwargs) -> bool:
+                      **fit_params) -> bool:
     
     h1=jump_hist
 
@@ -40,8 +40,8 @@ def plot_kinetics_fit(jump_hist,
                                               HistVecJumps=HistVecJumpsCDF,
                                               fit2states=fit2states,
                                               norm=True, 
-                                              useZcorr=False,
-                                              **kwargs)
+                                              **fit_params
+                                              )
     ## Normalization does not work for PDF yet (see commented line in fastspt.py)
     if CDF1:
         y = y * float(len(HistVecJumpsCDF))/float(len(HistVecJumps))

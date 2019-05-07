@@ -1,4 +1,4 @@
-# TODO: Paramters of fit are ignores when calling module from comman line. In iPython works fine.
+# TODO: Paramters of fit are ignores when calling module from comman line. In iPython works fine. 
 
 ## fastSPT_tools
 ## Some tools for the fastSPT package
@@ -55,7 +55,7 @@ def load_matlab_dataset_from_path(path):
     return np.asarray(mat['trackedPar'][0])
 
 
-def auto_fit(cell_spt, **fit_params ):
+def auto_fit(cell_spt, fit_params ):
     '''
     Generates histograms and fits kinetic model according to intialization dictionary fit_params
     
