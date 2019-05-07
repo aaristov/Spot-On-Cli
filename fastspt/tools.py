@@ -69,7 +69,10 @@ def auto_fit(cell_spt, fit_params ):
     jump_histrogram = get_jump_length_histrogram(cell_spt, **fit_params)
     
     if fit_params['plot_hist']: plot_hist_jumps(jump_histrogram)
-
+    
+    
+    print(f'Fitting {fit_params["states"]} states')
+    
     fit_result = fit_kinetics(jump_histrogram,
                              **fit_params)
     
