@@ -1,5 +1,7 @@
 CHANGELOG: fastspt, a library fitting realistic jump length distribution to SPT data
 ------------------------------------------------------------------------------------
+## v16.4: Fix parameter handling 
+
 ## v16.0: Python 3 support
 
 ## v12.0: Fix some parameters in the model -- (2017-09-24)
