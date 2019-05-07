@@ -1,0 +1,1 @@
+{"states": 2, "iterations": 1, "CDF": false, "CDF1": true, "Frac_Bound": [0, 1], "D_Free": [0.01, 1.0], "D_Med": [0.005, 0.1], "D_Bound": [0.0, 0.005], "sigma": 0.02, "sigma_bound": [0.005, 0.1], "fit_sigma": true, "dT": 0.06, "dZ": 0.7, "a": 0.15716, "b": 0.20811, "useZcorr": false, "plot_hist": false, "plot_result": true}
