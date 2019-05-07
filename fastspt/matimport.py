@@ -76,50 +76,14 @@ def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     return tracks
 
 def analyse_mat_file(data_path,
-                     pixel_size_um=0.075,
-                     exposure_ms=60,
-                     min_len=3,
-                     states=3,
-                     iterations=1,
-                     CDF=False,
-                     CDF1 = True,
-                     Frac_Bound = [0, 1],
-                     D_Free = [0.015, 1.],
-                     D_Med = [0.005, 0.015],
-                     D_Bound = [0.0, 0.005],
-                     sigma = 0.02,
-                     sigma_bound = [0.005, 0.1],
-                     fit_sigma=True,
-                     save_stats=True,
-                     plot_hist=False, 
-                     plot_result=True,
-                     plot_track_len=False,
-                     **kwargs
+                     fit_params
                      ):
     
     print(f'Analysing {data_path}')
 
-    fit_params = dict(pixel_size_um=pixel_size_um,
-                     exposure_ms=exposure_ms,
-                     min_len=min_len,
-                     states=states,
-                     iterations=iterations,
-                     CDF=CDF,
-                     CDF1 = CDF1,
-                     Frac_Bound = Frac_Bound,
-                     D_Free = D_Free,
-                     D_Med = D_Med,
-                     D_Bound = D_Bound,
-                     sigma = sigma,
-                     sigma_bound = sigma_bound,
-                     fit_sigma=fit_sigma,
-                     dT=exposure_ms / 1000.,
-                     save_stats=save_stats,
-                     plot_hist=plot_hist, 
-                     plot_result=plot_result,
-                     plot_track_len=plot_track_len)
     pprint(fit_params)
     all_exp = read_gizem_mat(data_path)
+    
     if all_exp:
         reps = concat_reps(all_exp, min_len=min_len, exposure_ms=exposure_ms, pixel_size_um=pixel_size_um)
     for rep in reps:
