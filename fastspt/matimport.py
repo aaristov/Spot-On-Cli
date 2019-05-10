@@ -22,6 +22,11 @@ def read_gizem_mat(path):
     return rep_fov_xyft
 
 def concat_all(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
+    '''
+    Concatenates all the data into one table
+    returns [xyft_table]
+    '''
+
     n_rep = len(rep_fov_xyft)
     each_len_rep = [len(t) for t in rep_fov_xyft]
     print(f'discovered {n_rep} replicates containing {each_len_rep} acquisitions')
@@ -33,9 +38,14 @@ def concat_all(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
             tracks = sum([tracks, grouped], [])
             
     print(f'Total {len(tracks)} tracks')
-    return tracks
+    return [tracks]
 
 def concat_reps(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
+    '''
+    Concatenates data by replicates
+    returns [xyft_table_rep1, ..., ..._repN]
+    '''
+    
     n_rep = len(rep_fov_xyft)
     each_len_rep = [len(t) for t in rep_fov_xyft]
     print(f'discovered {n_rep} replicates containing {each_len_rep} acquisitions')
