@@ -9,7 +9,7 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
-#import fastspt.version as version
+from fastspt.version import __version__
 
 here = path.abspath(path.dirname(__file__))
 
