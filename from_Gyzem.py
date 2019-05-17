@@ -52,12 +52,12 @@ from glob import glob
 
 # In[70]:
 
-data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/*forSpotOn*.mat')
+data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/*tlapse*.mat')
 data_paths
 
 # In[71]:
 # 1 2 3 5
-data_path = data_paths[2]
+data_path = data_paths[0]
 
 print(data_path)
 # In[92]:
@@ -100,15 +100,16 @@ fit_params = dict(states=2,
                  dZ=0.7,
                  a=0.15716,
                  b=0.20811,
-                 useZcorr=False ) 
+                 useZcorr=False,
+                 plot_hist=False,
+                 plot_result=True ) 
 
 def my_fit(rep):
     
     cell_spt = readers.to_fastSPT(rep, from_json=False)
     fit_result = tools.auto_fit(cell_spt,
                                 fit_params=fit_params,
-                                plot_hist=False,
-                                plot_result=True)
+                                )
     return fit_result
 
 reps_fits = list(map(my_fit, reps))
