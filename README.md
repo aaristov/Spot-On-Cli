@@ -21,9 +21,11 @@ Your package manager may provide precompiled versions of `matplotlib`, `numpy` a
 
 # Installation (from pip)
 
-`pip install fastspt`
+`git clone https://github.com/aaristov/Spot-On-Cli.git`
 
-# Installation (from this Gitlab) repository
+`pip install .`
+
+# Installation (from this Github) repository
 
 ## Install dependencies
 `pip install -r requirements.txt`
