@@ -78,7 +78,8 @@ def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
         track = xyft[i:ii]
         try:
             if len(track) >= min_len:
-                tracks.append(track)
+                track_sorted_by_frame = track[np.argsort(track[:,3])]
+                tracks.append(track_sorted_by_frame)
         except Exception as e:
             print(min_len)
             raise e
