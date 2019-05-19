@@ -61,7 +61,7 @@ def concat_reps(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
 
     return reps
 
-def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
+def group_tracks(xyft, min_len=3, max_len=20, exposure_ms=None, pixel_size_um=None):
     xyft = np.array(xyft)
     assert xyft.ndim == 2 and xyft.shape[1] == 4
     xyft = xyft[np.argsort(xyft[:,3])]
@@ -77,7 +77,7 @@ def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     for i, ii in tqdm(zip(ids[:-1], ids[1:]), disable=True):
         track = xyft[i:ii]
         try:
-            if len(track) >= min_len:
+            if len(track) >= min_len and len(track) <= max_len:
                 track_sorted_by_frame = track[np.argsort(track[:,3])]
                 tracks.append(track_sorted_by_frame)
         except Exception as e:
