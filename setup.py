@@ -76,7 +76,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy', 'scipy', 'lmfit', 'xml2dict', 'mat4py', 'tqdm', 'pandas', 'matplotlib'],
+    install_requires=['numpy', 'scipy', 'lmfit', 'xmltodict', 'mat4py', 'tqdm', 'pandas', 'matplotlib'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
