@@ -64,6 +64,7 @@ def concat_reps(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
 def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     xyft = np.array(xyft)
     assert xyft.ndim == 2 and xyft.shape[1] == 4
+    xyft = xyft[np.argsort(xyft[:,3])]
     _, ids = np.unique(xyft[:,3], return_index=True)
     tracks = []
     xyft[:,3] = xyft[:,2]
@@ -77,7 +78,8 @@ def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
         track = xyft[i:ii]
         try:
             if len(track) >= min_len:
-                tracks.append(track)
+                track_sorted_by_frame = track[np.argsort(track[:,3])]
+                tracks.append(track_sorted_by_frame)
         except Exception as e:
             print(min_len)
             raise e

@@ -3,12 +3,19 @@ import numpy as np
 
 def get_track_lengths_dist(cell, plot=True):
     hist, bins = get_hist(cell)
-    fit_result, popt = fit_exponent(hist, bins)
-    a, c, d = popt
-    print(f'Fit result: {a:.2f} * e^(-x/{c:.2f}) + {d:.2f}')
-    if plot:
-        plot_hist_fit(hist, bins, fit_result, popt)
-    return True
+    try:
+        fit_result, popt = fit_exponent(hist, bins)
+        a, c, d = popt
+        print(f'Fit result: {a:.2f} * e^(-x/{c:.2f}) + {d:.2f}')
+        if plot:
+            plot_hist_fit(hist, bins, fit_result, popt)
+        return True
+    except RuntimeError as e:
+        print('Fit Failed', e)
+        if plot:
+            plt.hist(cell)
+            plt.show()
+        return False
     
 def get_hist(cell):
     track_lengths = list(map(len, cell))
