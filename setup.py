@@ -29,7 +29,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://gitlab.com/tjian-darzacq-lab/Spot-On-cli',
+    url='https://gitlab.com/aaristov/Spot-On-cli',
 
     # Author details
     author='Maxime Woringer, Anders Sejr Hansen, Andrey Aristov',

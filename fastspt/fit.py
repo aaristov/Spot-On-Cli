@@ -171,6 +171,7 @@ def compute_jump_length_distribution(trackedPar,
         TransLengths.append({"Step":[]}) # each iteration is a different number of timepoints
         
     if useAllTraj: ## Use all of the trajectory
+        logger.debug('useAllTraj = True')
         for i in range(len(trackedPar)): #1:length(trackedPar)
             CurrTrajLength = trackedPar[i][0].shape[0] #size(trackedPar(i).xy,1);
 
@@ -200,6 +201,8 @@ def compute_jump_length_distribution(trackedPar,
                         TransLengths[CurrFrameJump-1]["Step"].append(pdist(CurrXY_points))
 
     elif not useAllTraj: ## Use only the first JumpsToConsider timepoints
+        logger.debug('useAllTraj = False')
+        logger.debug(f'len(trackedPar) = {len(trackedPar)}')
         for i in range(len(trackedPar)): #1:length(trackedPar)
             CurrTrajLength =trackedPar[i][0].shape[0]#size(trackedPar(i).xy,1);
             if CurrTrajLength >= 3:
@@ -225,7 +228,12 @@ def compute_jump_length_distribution(trackedPar,
                                         trackedPar[i][2][0][k]
                         #trackedPar(i).Frame(k+n) - trackedPar(i).Frame(k);
                         # Compute the distance between the pair of points
-                        TransLengths[CurrFrameJump-1]["Step"].append(pdist(CurrXY_points))
+                        _dist = pdist(CurrXY_points)
+                        try:
+                            TransLengths[CurrFrameJump-1]["Step"].append(_dist)
+                        except IndexError as e:
+                            logger.error(f'Index error happened  in TransLengths[CurrFrameJump-1]["Step"].append(_dist), CurrFrameJump = {CurrFrameJump}, len(TransLengths) = {len(TransLengths)}, trackedPar[i][2][0][k+n] = {trackedPar[i][2][0][k+n]}, trackedPar[i][2][0][k] = {trackedPar[i][2][0][k]}')
+                            
 
     ## Calculate the PDF histograms (required for CDF)
     HistVecJumps = np.arange(0, MaxJump+BinWidth, BinWidth)  # jump lengths in micrometers
