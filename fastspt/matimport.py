@@ -86,7 +86,11 @@ def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     return tracks
 
 def analyse_mat_file(data_path,
-                     fit_params
+                     min_len=3,
+                     exposure_ms=60,
+                     pixel_size_um=0.08,
+                     plot_track_len=False,
+                     **fit_params
                      ):
     
     print(f'Analysing {data_path}')
@@ -116,7 +120,7 @@ def analyse_mat_files(*path_list, exposure_ms=60., pixel_size_um=0.075, **kwargs
     print(path_list)
     stats = {}
     for data_path in path_list[0]:
-        stats[data_path] = analyse_mat_file(data_path)
+        stats[data_path] = analyse_mat_file(data_path, exposure_ms=exposure_ms, pixel_size_um=pixel_size_um)
     return stats
 
 def get_stats(reps_fits, save_path=None, print_stats=True, save_fmt='json', suffix='.stats'):
