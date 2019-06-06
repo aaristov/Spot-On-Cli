@@ -6,3 +6,4 @@ pandas
 xlwt
 tqdm
 mat4py
+trackpy

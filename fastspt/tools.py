@@ -8,10 +8,63 @@
 ## ==== Imports
 import pickle, sys, scipy.io, os
 import numpy as np
-from fastspt import plot, fit
+from fastspt import plot, fit, matimport
 from fastspt.fit import fit_kinetics
+import trackpy as tp
+import pandas as pd
+import matplotlib.pyplot as plt
 
+def open_ts_table(path, verbose=0):
+    
+    ts_table = pd.read_csv(path)
+    if verbose: ts_table.head()
+    return ts_table
 
+def get_loc_numbers(ts_table:pd.DataFrame, plot=True):
+    '''
+    Analyses number of particles per frame, returns the list with the length of number of frames
+    '''
+    _, idx = np.unique(ts_table.frame, return_index=True)
+    num_locs_per_frame = idx[1:] - idx[:-1]
+    if plot:
+        plt.plot(num_locs_per_frame)
+    return num_locs_per_frame
+
+def open_and_link_ts_table(path, min_frame=None, max_frame=None, exposure_ms=60, link_distance_um=0.3, link_memory=1, verbose=0, loc_num_plot=True):
+    ts_table = open_ts_table(path)
+    grouped_tracks = link_ts_table(ts_table, min_frame, max_frame, exposure_ms, link_distance_um, link_memory, verbose, loc_num_plot)
+    return grouped_tracks
+
+def link_ts_table(ts_table:pd.DataFrame, min_frame=None, max_frame=None, exposure_ms=60, link_distance_um=0.3, link_memory=1, verbose=0, loc_num_plot=True):
+    '''
+    links particles with trackpy and groups particles into tracks using their index.
+    '''
+    df = pd.DataFrame(columns = ['x', 'y', 'frame'], data=ts_table[['x [nm]', 'y [nm]', 'frame']].values)    
+    
+    
+    df.x = df.x / 1000 # nm -> um
+    df.y = df.y / 1000 # nm -> um
+    if min_frame:
+        df = df[df.frame >= min_frame]
+    if max_frame:
+        df = df[df.frame <= min_frame]
+    if verbose: df.head()
+    tracks = tp.link_df(df, search_range=link_distance_um, memory=link_memory)
+    if verbose: tracks.head()
+    print('\n')
+    grouped_tracks =  matimport.group_tracks(tracks, exposure_ms=exposure_ms)
+    
+    return grouped_tracks
+
+def get_low_density_frame(num_locs_per_frame:list, max_locs=200):
+    assert len(num_locs_per_frame) > 10
+    peak = np.argmax(num_locs_per_frame)
+    # print(peak)
+    indices_with_fewer_locs = np.where(num_locs_per_frame[peak:] < max_locs)
+    # print(indices_with_fewer_locs)
+    return indices_with_fewer_locs[0] + peak
+    
+    
 ## ==== Sample dataset-related functions
 def list_sample_datasets(path):
     """Simple relay function that allows to list datasets from a datasets.py file"""
