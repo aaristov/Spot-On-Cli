@@ -14,6 +14,8 @@ import trackpy as tp
 import pandas as pd
 import matplotlib.pyplot as plt
 
+tp.ignore_logging()
+
 def open_ts_table(path, verbose=0):
     
     ts_table = pd.read_csv(path)
@@ -60,9 +62,13 @@ def get_low_density_frame(num_locs_per_frame:list, max_locs=200):
     assert len(num_locs_per_frame) > 10
     peak = np.argmax(num_locs_per_frame)
     # print(peak)
-    indices_with_fewer_locs = np.where(num_locs_per_frame[peak:] < max_locs)[0]
+    indices_with_fewer_locs = np.where(num_locs_per_frame[peak:] > max_locs)[0]
     # print(indices_with_fewer_locs)
-    return indices_with_fewer_locs[0] + peak
+    try:
+        thr = indices_with_fewer_locs[-1]
+    except IndexError:
+        thr = 0
+    return thr + peak
     
     
 ## ==== Sample dataset-related functions
