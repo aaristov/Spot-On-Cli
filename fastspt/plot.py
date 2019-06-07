@@ -6,6 +6,8 @@
 # History: For the history of the script see the related CHANGELOG file.
 
 ## ==== Imports
+import matplotlib as mpl
+mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 

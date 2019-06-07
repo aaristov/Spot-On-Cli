@@ -61,7 +61,7 @@ def concat_reps(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
 
     return reps
 
-def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
+def group_tracks(xyft, min_len=3, max_len=20, exposure_ms=None, pixel_size_um=None):
     xyft = np.array(xyft)
     assert xyft.ndim == 2 and xyft.shape[1] == 4
     xyft = xyft[np.argsort(xyft[:,3])]
@@ -77,7 +77,7 @@ def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     for i, ii in tqdm(zip(ids[:-1], ids[1:]), disable=True):
         track = xyft[i:ii]
         try:
-            if len(track) >= min_len:
+            if len(track) >= min_len and len(track) <= max_len:
                 track_sorted_by_frame = track[np.argsort(track[:,3])]
                 tracks.append(track_sorted_by_frame)
         except Exception as e:
@@ -87,8 +87,13 @@ def group_tracks(xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     print(f'{len(tracks)}  tracks ')
     return tracks
 
+
 def analyse_mat_file(data_path,
-                     fit_params
+                     min_len=3,
+                     exposure_ms=60,
+                     pixel_size_um=0.08,
+                     plot_track_len=False,
+                     **fit_params
                      ):
     
     print(f'Analysing {data_path}')
@@ -113,12 +118,11 @@ def analyse_mat_file(data_path,
     return stats
 
 
-
 def analyse_mat_files(*path_list, exposure_ms=60., pixel_size_um=0.075, **kwargs):
     print(path_list)
     stats = {}
     for data_path in path_list[0]:
-        stats[data_path] = analyse_mat_file(data_path)
+        stats[data_path] = analyse_mat_file(data_path, exposure_ms=exposure_ms, pixel_size_um=pixel_size_um)
     return stats
 
 def get_stats(reps_fits, save_path=None, print_stats=True, save_fmt='json', suffix='.stats'):
