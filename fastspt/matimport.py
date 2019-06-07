@@ -87,39 +87,43 @@ def group_tracks(xyft, min_len=3, max_len=20, exposure_ms=None, pixel_size_um=No
     print(f'{len(tracks)}  tracks ')
     return tracks
 
-# def analyse_mat_file(data_path,
-#                      fit_params
-#                      ):
-    
-#     print(f'Analysing {data_path}')
 
-#     pprint(fit_params)
-#     all_exp = read_gizem_mat(data_path)
+def analyse_mat_file(data_path,
+                     min_len=3,
+                     exposure_ms=60,
+                     pixel_size_um=0.08,
+                     plot_track_len=False,
+                     **fit_params
+                     ):
     
-#     if all_exp:
-#         reps = concat_reps(all_exp, min_len=min_len, exposure_ms=exposure_ms, pixel_size_um=pixel_size_um)
-#     for rep in reps:
-#         tracklen.get_track_lengths_dist(rep, plot=plot_track_len)
+    print(f'Analysing {data_path}')
+
+    pprint(fit_params)
+    all_exp = read_gizem_mat(data_path)
+    
+    if all_exp:
+        reps = concat_reps(all_exp, min_len=min_len, exposure_ms=exposure_ms, pixel_size_um=pixel_size_um)
+    for rep in reps:
+        tracklen.get_track_lengths_dist(rep, plot=plot_track_len)
         
-#     def my_fit(rep):
+    def my_fit(rep):
     
-#         cell_spt = readers.to_fastSPT(rep, from_json=False)
-#         fit_result = tools.auto_fit(cell_spt,
-#                                     **fit_params)
-#         return fit_result
+        cell_spt = readers.to_fastSPT(rep, from_json=False)
+        fit_result = tools.auto_fit(cell_spt,
+                                    **fit_params)
+        return fit_result
 
-#     reps_fits = list(map(my_fit, reps))
-#     stats = get_stats(reps_fits, save_path=data_path)
-#     return stats
+    reps_fits = list(map(my_fit, reps))
+    stats = get_stats(reps_fits, save_path=data_path)
+    return stats
 
 
-
-# def analyse_mat_files(*path_list, exposure_ms=60., pixel_size_um=0.075, **kwargs):
-#     print(path_list)
-#     stats = {}
-#     for data_path in path_list[0]:
-#         stats[data_path] = analyse_mat_file(data_path)
-#     return stats
+def analyse_mat_files(*path_list, exposure_ms=60., pixel_size_um=0.075, **kwargs):
+    print(path_list)
+    stats = {}
+    for data_path in path_list[0]:
+        stats[data_path] = analyse_mat_file(data_path, exposure_ms=exposure_ms, pixel_size_um=pixel_size_um)
+    return stats
 
 def get_stats(reps_fits, save_path=None, print_stats=True, save_fmt='json', suffix='.stats'):
     #get stats

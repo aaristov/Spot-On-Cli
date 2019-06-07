@@ -43,8 +43,11 @@ def main(args=None, callback=None):
 
     fit_parser = subparsers.add_parser('fit', help='fit kinetics model using spot-on')
 
-    fit_parser.add_argument('--matfile', nargs='*', type=str, default='', 
+    fit_parser.add_argument('--mat', nargs='*', type=str, default='', 
         help='matlab dataset with localizations, format replicate->fov->coodrinates [[[[x, y, frame, track]]]], units [px, px, int, int]')
+    fit_parser.add_argument('--xml', nargs='*', type=str, default='', 
+        help='xml tracks from Trackmate')
+    
     fit_parser.add_argument('--config', type=str, help='json config file')
 
     #args = parser.parse_args()
@@ -78,6 +81,8 @@ def main(args=None, callback=None):
         except json.JSONDecodeError:
             error('Bad configuration')
             exit(2)
+
+            
         for fname in fnames:
             if not os.path.isfile(fname):
                 error('File not found')

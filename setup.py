@@ -16,8 +16,6 @@ here = path.abspath(path.dirname(__file__))
 # Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
-#execfile("fastspt/version.py")
-exec(open("fastspt/version.py").read())
 print("Version", __version__)
 setup(
     name='fastspt',
@@ -76,7 +74,15 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy', 'scipy', 'lmfit', 'xmltodict', 'mat4py', 'tqdm', 'pandas', 'matplotlib'],
+    install_requires=['numpy', 
+                        'scipy', 
+                        'lmfit', 
+                        'matplotlib', 
+                        'xmltodict',
+                        'pandas',
+                        'xlwt',
+                        'tqdm',
+                        'mat4py'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
