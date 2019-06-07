@@ -52,7 +52,7 @@ from glob import glob
 
 # In[70]:
 
-data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/*tlapse*.mat')
+data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/*S245*.mat')
 data_paths
 
 # In[71]:
