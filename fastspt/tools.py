@@ -60,7 +60,7 @@ def get_low_density_frame(num_locs_per_frame:list, max_locs=200):
     assert len(num_locs_per_frame) > 10
     peak = np.argmax(num_locs_per_frame)
     # print(peak)
-    indices_with_fewer_locs = np.where(num_locs_per_frame[peak:] < max_locs)
+    indices_with_fewer_locs = np.where(num_locs_per_frame[peak:] < max_locs)[0]
     # print(indices_with_fewer_locs)
     return indices_with_fewer_locs[0] + peak
     
