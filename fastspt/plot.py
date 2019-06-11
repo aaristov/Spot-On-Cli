@@ -14,6 +14,32 @@ import numpy as np
 from fastspt import fit, plot
 import lmfit
 
+def plot_tracks_xy_sd(tracks_xytf):
+    for i, t in enumerate(tracks_xytf[:]):
+        t = np.array(t)
+        xy = t[:,:2]
+        dxy = xy[1:] - xy[:-1]
+        dt = t[:-1, 3]
+        d2 = (dxy ** 2).sum(axis=1)
+        if len(d2) > 10:
+            fig = plt.figure(figsize=(8,4))
+            fig.add_subplot(121)
+            plt.title(f'track {i+1} xy')
+            plt.plot(dxy[:, 0], dxy[:, 1], '.-')
+            plt.xlabel('x, um')
+            plt.ylabel('y, um')
+            plt.axis('square')
+            plt.xlim(-0.3, 0.3)
+            plt.ylim(-0.3, 0.3)
+            fig.add_subplot(122)
+            plt.plot(dt, d2, '.-')
+            plt.title(f'track {i+1} sqr displacement')
+            plt.xlabel('frame')
+            plt.ylabel('sqr displacement')
+            plt.ylim(0, 0.2)
+            plt.tight_layout()
+            plt.show()
+
 def plot_kinetics_fit(jump_hist,
                       fit_result:lmfit.model.ModelResult, 
                       CDF1=True,
