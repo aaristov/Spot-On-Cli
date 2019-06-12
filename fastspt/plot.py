@@ -14,30 +14,34 @@ import numpy as np
 from fastspt import fit, plot
 import lmfit
 
-def plot_tracks_xy_sd(tracks_xytf):
+def plot_tracks_xy_sd(tracks_xytf, min_len=10, figsize=(8,4), xy_radius=0.3, sd_max=0.2, bound_sd=0.01):
     for i, t in enumerate(tracks_xytf[:]):
         t = np.array(t)
         xy = t[:,:2]
+        x_center, y_center = xy.mean(axis=0)
         dxy = xy[1:] - xy[:-1]
         dt = t[:-1, 3]
         d2 = (dxy ** 2).sum(axis=1)
-        if len(d2) > 10:
-            fig = plt.figure(figsize=(8,4))
+        if len(d2) >= min_len:
+            fig = plt.figure(figsize=figsize)
             fig.add_subplot(121)
             plt.title(f'track {i+1} xy')
-            plt.plot(dxy[:, 0], dxy[:, 1], '.-')
+            plt.plot(xy[:, 0], xy[:, 1], '.-')
             plt.xlabel('x, um')
             plt.ylabel('y, um')
             plt.axis('square')
-            plt.xlim(-0.3, 0.3)
-            plt.ylim(-0.3, 0.3)
+            plt.xlim(x_center - xy_radius, x_center + xy_radius)
+            plt.ylim(y_center - xy_radius, y_center + xy_radius)
             fig.add_subplot(122)
-            plt.plot(dt, d2, '.-')
+            plt.plot(dt, d2, label='free')
+            bound = np.where(d2 < bound_sd)
+            plt.plot(dt[bound], d2[bound], 'ro', label='bound')
             plt.title(f'track {i+1} sqr displacement')
             plt.xlabel('frame')
             plt.ylabel('sqr displacement')
-            plt.ylim(0, 0.2)
+            plt.ylim(0, sd_max)
             plt.tight_layout()
+            plt.legend()
             plt.show()
 
 def plot_kinetics_fit(jump_hist,
