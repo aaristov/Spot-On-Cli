@@ -36,23 +36,17 @@ print("Using fastspt version {}".format(fs.__version__))
 
 # In[3]:
 
-
 import os
 os.getcwd()
-
-# xml_path = r"movie_continuos_exp_60ms_561_50W_405_12_Tracks_filter_min_intensity.xml"
-# path_wt = r"/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/WTforAndrey.mat"
-#path_oe = r"Z:\Andrey\fromGizem\2019-04-18-PBP2-tracks\PBP2OverExpforAndrey.mat"
 
 # In[67]:
 
 
 from glob import glob
 
-
 # In[70]:
-
-data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/*S245*.mat')
+# A2250_inliq40forAndrey A22inliq30forAndrey
+data_paths = glob('/Users/gizemozbaykal/Dropbox/G5MCM/Gizem/forAndrey/*WT*.mat')
 data_paths
 
 # In[71]:
