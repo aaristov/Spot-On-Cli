@@ -52,15 +52,15 @@ def link_ts_table(ts_table:pd.DataFrame, min_frame=None, max_frame=None, exposur
         df = df[df.frame <= min_frame]
     if verbose: df.head()
     tracks = tp.link_df(df, search_range=link_distance_um, memory=link_memory)
-    if verbose: tracks.head()
-    print('\n')
+    if verbose: print(tracks.head())
+    # print('\n')
     grouped_tracks =  matimport.group_tracks(tracks, exposure_ms=exposure_ms)
     
     return grouped_tracks
 
 def get_low_density_frame(num_locs_per_frame:list, max_locs=200):
     assert len(num_locs_per_frame) > 10
-    
+
     if max(num_locs_per_frame) > max_locs:
         peak = np.argmax(num_locs_per_frame)
         # print(peak)
