@@ -11,16 +11,10 @@ mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-from fastspt import fit, plot
+from fastspt import fit, plot, bind
 import lmfit
 
-def get_sqr_displacement(track_xytf):
-    track = np.array(track_xytf)
-    xy = track[:,:2]
-    dxy = xy[1:] - xy[:-1]
-    dt = track[:-1, 3]
-    sqr_displacement = (dxy ** 2).sum(axis=1)
-    return sqr_displacement
+
 
 def threshold_sqr_displacement(sd, thr=0.005):
     '''
@@ -30,7 +24,7 @@ def threshold_sqr_displacement(sd, thr=0.005):
 
 def plot_track_xy_sd(track_xytf, figsize=(8,4), xy_radius=0.3, sd_max=0.2, bound_sd=0.01, title=None):
     
-    sd = get_sqr_displacement(track_xytf)
+    sd = bind.get_sqr_displacement(track_xytf)
     track = np.array(track_xytf)
     xy = track[:,:2]
     x_center, y_center = xy.mean(axis=0)
@@ -46,7 +40,7 @@ def plot_track_xy_sd(track_xytf, figsize=(8,4), xy_radius=0.3, sd_max=0.2, bound
     plt.xlim(x_center - xy_radius, x_center + xy_radius)
     plt.ylim(y_center - xy_radius, y_center + xy_radius)
     fig.add_subplot(122)
-    plt.plot(dt, sd, label='free')
+    plt.plot(dt, sd, '.-', label='free')
     
     if bound_sd:
         bound = np.where(sd < bound_sd)
