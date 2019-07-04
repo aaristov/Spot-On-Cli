@@ -434,7 +434,13 @@ def fit_jump_length_distribution(JumpProb, JumpProbCDF,
             if abs(LB[2]-UB[2])<eps:
                 pars['D_bound'].set(value=LB[2], vary=False)
 
-        out = jumplengthmodel.fit(y_init, x=x, params=pars, fit_kws=solverparams)
+        out = jumplengthmodel.fit(
+            y_init, 
+            x=x, 
+            params=pars, 
+            fit_kws=solverparams, 
+            nan_policy='propagate'
+        )
         ssq2 = (out.residual[:-1]**2).sum()/(out.residual.shape[0]-1)
         out.params.ssq2 = ssq2
         
