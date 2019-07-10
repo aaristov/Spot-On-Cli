@@ -34,10 +34,21 @@ def get_loc_numbers(ts_table:pd.DataFrame, plot=True):
 
 def open_and_link_ts_table(path, min_frame=None, max_frame=None, exposure_ms=60, link_distance_um=0.3, link_memory=1, verbose=0, loc_num_plot=True):
     ts_table = open_ts_table(path)
-    grouped_tracks = link_ts_table(ts_table, min_frame, max_frame, exposure_ms, link_distance_um, link_memory, verbose, loc_num_plot)
+    tracks = link_ts_table(ts_table, min_frame, max_frame, exposure_ms, link_distance_um, link_memory, verbose, loc_num_plot)
+    grouped_tracks =  matimport.group_tracks(tracks, min_len=3, max_len=20, exposure_ms=exposure_ms)
+
     return grouped_tracks
 
-def link_ts_table(ts_table:pd.DataFrame, min_frame=None, max_frame=None, exposure_ms=60, link_distance_um=0.3, link_memory=1, verbose=0, loc_num_plot=True):
+def link_ts_table(
+    ts_table:pd.DataFrame, 
+    min_frame=None, 
+    max_frame=None, 
+    exposure_ms=60, 
+    link_distance_um=0.3, 
+    link_memory=1, 
+    verbose=0, 
+    loc_num_plot=True,
+    save_linked_csv=True):
     '''
     links particles with trackpy and groups particles into tracks using their index.
     '''
@@ -54,9 +65,8 @@ def link_ts_table(ts_table:pd.DataFrame, min_frame=None, max_frame=None, exposur
     tracks = tp.link_df(df, search_range=link_distance_um, memory=link_memory)
     if verbose: print(tracks.head())
     # print('\n')
-    grouped_tracks =  matimport.group_tracks(tracks, exposure_ms=exposure_ms)
     
-    return grouped_tracks
+    return tracks
 
 def get_low_density_frame(num_locs_per_frame:list, max_locs=200):
     assert len(num_locs_per_frame) > 10
