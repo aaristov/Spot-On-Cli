@@ -1,0 +1,180 @@
+import numpy as np
+import pandas as pd
+from tqdm.auto import tqdm
+import re
+from fastspt.plot import plt
+
+
+def open_and_group_tracks_swift(path, by='seg.id', exposure_ms=60, min_len=3, max_len=np.inf):
+    """
+    Reads csv from path
+    Groups tracks - see swift.group_tracks_swift
+    Returns list with tracks in xytf format
+    """
+    print('Processing ', path)
+    df = pd.read_csv(path)
+    tracks = group_tracks_swift(df, by, exposure_ms, min_len, max_len)
+    return tracks
+
+def group_tracks_swift(df:pd.DataFrame, by='seg.id', exposure_ms = 60, min_len=3, max_len=20):
+    tracks = []
+    try:
+        xyif = df[['x [nm]', 'y [nm]', by, 'frame']].sort_values(by)
+    except KeyError:
+        xyif = df[['x', 'y', by, 'frame']].sort_values(by)
+    
+    print(len(xyif), 'localizations')
+    seg_ids = xyif[by]
+    _, ids = np.unique(seg_ids, return_index=True)
+    print(len(ids), "unique ", by)
+    time = xyif.frame.values
+    if exposure_ms:
+        time = time * exposure_ms * 1.e-3
+    
+    xytf = xyif.values
+    xytf[:, 2] = time
+    xytf[:, :2] = xytf[:, :2] / 1000. # from nm to um
+            
+    for i, ii in tqdm(zip(ids[:-1], ids[1:]), disable=True):
+        track = xytf[i:ii]
+        try:
+            if len(track) >= min_len and len(track) <= max_len:
+                track_sorted_by_frame = track[np.argsort(track[:,3])]
+                tracks.append(track_sorted_by_frame)
+        except Exception as e:
+            print(min_len)
+            raise e
+
+    print(f'{len(tracks)}  tracks grouped with exp time {exposure_ms} ms and lengths between {min_len} and {max_len}')
+    return tracks
+
+def make_spoton_dataset_from_swift(data_path):
+    tracks = pd.read_csv(data_path)
+    rep = group_tracks_swift(tracks, by='seg.id', min_len=5, max_len=30)
+    return rep
+
+def plot_mjd_hist(tracks, use_column='seg.mjd', weight_by_column='seg.mjd_n', bins=30, range=(0,250), label=''):
+    h_mjd = plt.hist(tracks[use_column], weights=tracks[weight_by_column], bins=bins, range=range, label=label)
+    plt.xlabel(f'{use_column} weighted by {weight_by_column}')
+    plt.ylabel(f'counts')
+
+def count_unique_segments(sub_tracks):
+    return len(np.unique(sub_tracks["seg.id"]))
+
+def select_populations(tracks, from_column='seg.dynamics', keywords=['static', 'free'], equalize_min_len_by='seg.loc_count'):
+    '''
+    Selects localizations with keywords dynamics and returns a dictionary
+    '''
+    out = {}
+    min_len = 0
+    for k in keywords:
+        sub_tracks = tracks[tracks[from_column] == k ]
+        n_tracks = len(sub_tracks)
+        print(f'{k} : {n_tracks} localizations, {count_unique_segments(sub_tracks)} unique tracks')
+        min_len = max(min_len, min(sub_tracks[equalize_min_len_by]))
+        out[k] = sub_tracks
+    
+    print(f'min_len: {min_len}')
+    for k in keywords:
+        out[k] = out[k][out[k][equalize_min_len_by] >= min_len]
+       
+    return out
+
+def extract_bond_molecules_which_photobleach(tracks_from_swift:pd.DataFrame, limit_seg_count=1):
+    '''
+    Idea is to select tracks exclusively consisted of bound molecules.
+    track.seg_count == 1
+    dynamics == 'static'
+    '''
+    selected_populations = select_populations(tracks_from_swift, keywords=['static', 'free'])
+#     print(selected_populations.keys())
+    bound_segments, free_segments = selected_populations.values()
+    if limit_seg_count:
+        bound_segments = bound_segments[bound_segments['track.seg_count'] == limit_seg_count]
+    print(f'{count_unique_segments(bound_segments)} tracks with single segment')
+    return bound_segments
+    
+def get_lengths_of_bound_tracks(bound_molecules_with_single_segment, min_len=20):
+    bound_tracks = group_tracks_swift(bound_molecules_with_single_segment, max_len=np.inf, min_len=min_len)
+    print('after grouping total ', len(bound_tracks), ' tracks')
+    lengths = list(map(len, bound_tracks))
+    return lengths
+
+def get_lengths_of_bound_tracks_from_path(data_path, seg_count=None):
+    tracks = pd.read_csv(data_path)
+    bleaching_bound_molecules = extract_bond_molecules_which_photobleach(tracks, limit_seg_count=seg_count)
+    lengths = get_lengths_of_bound_tracks(bleaching_bound_molecules)
+    plt.hist(lengths, density=True)
+    return lengths
+
+def compute_switching_rate(tracks_swift:pd.DataFrame):
+    '''
+    Computes koff, kon rate from swift table with dynamics column.
+    
+    p(diff -> bound | diffusive) = N(diff -> bound) / N(diffusive)
+    '''
+    bound_locs, diff_locs = select_populations(tracks_swift, keywords=['static', 'free']).values()
+    bound_tracks = group_tracks_swift(bound_locs, max_len=np.inf)
+    diff_tracks = group_tracks_swift(diff_locs, max_len=np.inf)
+    n_bound_locs = len(bound_locs) - len(bound_tracks)
+    n_diff_locs = len(diff_locs) - len(diff_tracks)
+    
+    n_bound_to_diff = 0
+    n_diff_to_bound = 0
+    # n_no_switch = 0
+    
+    switching_locs = tracks_swift[tracks_swift['track.seg_count'] > 1]
+    
+    for track_id in np.unique(switching_locs['track.id']):
+#         print('track.id ', track_id)
+        single_track = switching_locs[switching_locs['track.id'] == track_id]
+        states = [single_track[single_track['seg.id'] == seg_id]['seg.dynamics'].values[0] for seg_id in np.unique(single_track['seg.id'])]
+        states_short = '-'.join(states)
+        
+        n_bound_to_diff += len(re.findall('static-free', states_short)) 
+        n_diff_to_bound += len(re.findall('free-static', states_short))
+    print(f'b -> u : {n_bound_to_diff},  per {n_bound_locs} bound locs')
+    print(f'u -> b : {n_diff_to_bound},  per {n_diff_locs} diffusive locs')
+    
+        
+    return n_bound_to_diff/n_bound_locs, n_diff_to_bound/n_diff_locs
+
+def process_switching_rate_from_swift(data_path):
+    """
+    example:
+        rates = list(map(process_switching_rate_from_swift, data_paths))
+    """
+    print(data_path)
+    tracks = pd.read_csv(data_path)
+    return compute_switching_rate(tracks)
+
+
+def compute_expected_bound_fraction(koff, kon):
+    return 1. / (1. + koff / kon)
+
+def make_table_with_rates(rates):
+    '''
+    Creates oandas Dataframe with rates and bound fractions.
+    Parameters:
+        rates for n experiments are (n, 2) numpy array or list with first column Koff, second - Kon rate.
+    Returns: 
+        rates_df: formatted pandas DataFrame table with third column containing bound fraction.
+        
+    Example:
+        rates = list(map(process_switching_rate_from_swift, data_paths))
+        rates_df = make_table_with_rates(rates)
+        rates_df
+            		koff		kon			bound fraction
+            dataset			
+            0		0.009074	0.001253	0.121338
+            1		0.006121	0.000777	0.112576
+            2		0.005812	0.000404	0.065015
+            3		0.005241	0.000340	0.061006
+            4		0.000000	0.000794	1.000000
+    '''
+    rates_df = pd.DataFrame(columns=['koff', 'kon', 'bound fraction'])
+    rates_df.index.name = 'dataset'
+    for i, (koff, kon)  in enumerate(rates):
+        rates_df.loc[f'{i}'] = [koff, kon, compute_expected_bound_fraction(koff, kon)]
+
+    return rates_df
