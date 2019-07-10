@@ -69,7 +69,9 @@ def group_tracks(
     pixel_size_um:float=None
     ):
     '''
-    Accepts four-column dataset xyft with x, y, frame, track.id columns
+    Accepts four-column dataset xyft with x, y, frame, track.id columns.
+    Returns groups of tracks with the same id after filtering min and max 
+    number of localizations and appluing exposure and pixel size.
     
     Parameters
     ----------
@@ -80,16 +82,18 @@ def group_tracks(
     max_len : int, optional
         only return tracks with less max_len localizations 
     exposure_ms : float, optional
-        if not None, multiplies third column to get time in seconds out of frames
+        if not None, multiplies third column to get time in seconds out of 
+        frames
     exposure_ms : float, optional
         if not None, multiplies first two to get microns out of pixels
 
     Returns
     -------
-    
-    tracks: list of individual tracks, where individual tracks are 4 columns x, y, time, frame
-            with localizations linked together. 
-            This format is compatible with fastspt.readers.to_fastSPT()
+
+    tracks : list 
+        list of individual tracks, where individual tracks are 4 columns 
+        x, y, time, frame with localizations linked together. 
+        This format is compatible with fastspt.readers.to_fastSPT()
     '''
 
     xyft = np.array(xyft)
