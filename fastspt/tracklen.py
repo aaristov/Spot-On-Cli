@@ -27,15 +27,15 @@ def get_hist(cell):
 def exponent(x, a, c, d):
     return a*np.exp(-x/c)+d
     
-def fit_exponent(hist, bins):
+def fit_exponent(hist, bins, fun=exponent, p0=None):
 
     from scipy.optimize import curve_fit
 
 
-    popt, pcov = curve_fit(exponent, bins, hist)
-    a, c, d = list(map(lambda x: np.round(x, 2), popt))
-    #print(a, c, d)
-    fit_result = exponent(bins, *popt)
+    popt, pcov = curve_fit(fun, bins, hist, p0)
+    # a, c, d = list(map(lambda x: np.round(x, 2), popt))
+    # print(a, c, d)
+    fit_result = fun(bins, *popt)
     return fit_result, popt
 
 def plot_hist_fit(hist, bins, fit_result, popt):
