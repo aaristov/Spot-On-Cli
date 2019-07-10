@@ -61,15 +61,45 @@ def concat_reps(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
 
     return reps
 
-def group_tracks(xyft, min_len=3, max_len=20, exposure_ms=None, pixel_size_um=None):
+def group_tracks(
+    xyft:np.ndarray, 
+    min_len:int=3, 
+    max_len:int=20, 
+    exposure_ms:float=None, 
+    pixel_size_um:float=None
+    ):
+    '''
+    Accepts four-column dataset xyft with x, y, frame, track.id columns
+    
+    Parameters
+    ----------
+
+    xyft : pandas.Dataframe or nd.array with 4 columns
+    min_len : int, optional
+        only return tracks with more min_len localizations 
+    max_len : int, optional
+        only return tracks with less max_len localizations 
+    exposure_ms : float, optional
+        if not None, multiplies third column to get time in seconds out of frames
+    exposure_ms : float, optional
+        if not None, multiplies first two to get microns out of pixels
+
+    Returns
+    -------
+    
+    tracks: list of individual tracks, where individual tracks are 4 columns x, y, time, frame
+            with localizations linked together. 
+            This format is compatible with fastspt.readers.to_fastSPT()
+    '''
+
     xyft = np.array(xyft)
     assert xyft.ndim == 2 and xyft.shape[1] == 4
     xyft = xyft[np.argsort(xyft[:,3])]
     _, ids = np.unique(xyft[:,3], return_index=True)
     tracks = []
-    xyft[:,3] = xyft[:,2]
+    xyft[:,3] = xyft[:,2] #xyff
     if exposure_ms:
-        xyft[:,2] = xyft[:,2] * exposure_ms * 1.e-3
+        xyft[:,2] = xyft[:,2] * exposure_ms * 1.e-3 #xytf
     
     if pixel_size_um:
         xyft[:,:2] = xyft[:,:2] * pixel_size_um
