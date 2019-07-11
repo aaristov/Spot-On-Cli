@@ -95,9 +95,10 @@ def group_tracks(
         x, y, time, frame with localizations linked together. 
         This format is compatible with fastspt.readers.to_fastSPT()
     '''
-
+    # print(xyft.head)
     xyft = np.array(xyft)
-    assert xyft.ndim == 2 and xyft.shape[1] == 4
+    assert xyft.ndim == 2 
+    assert xyft.shape[1] == 4, f'wrong number of columns: expected 4, got {xyft.shape[1]}. Abort'
     xyft = xyft[np.argsort(xyft[:,3])]
     _, ids = np.unique(xyft[:,3], return_index=True)
     tracks = []
