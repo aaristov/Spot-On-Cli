@@ -21,7 +21,7 @@ def get_hist(cell):
     track_lengths = list(map(len, cell))
     print(f'{len(cell)} tracks, {sum(track_lengths)} localizations')
     bins = np.arange(min(track_lengths), 20)
-    hist, bins_edges = np.histogram(track_lengths, bins=bins)
+    hist, _ = np.histogram(track_lengths, bins=bins)
     return hist, bins[:-1]
 
 def exponent(x, a, c, d):
@@ -32,7 +32,7 @@ def fit_exponent(hist, bins, fun=exponent, p0=None):
     from scipy.optimize import curve_fit
 
 
-    popt, pcov = curve_fit(fun, bins, hist, p0)
+    popt, _ = curve_fit(fun, bins, hist, p0)
     # a, c, d = list(map(lambda x: np.round(x, 2), popt))
     # print(a, c, d)
     fit_result = fun(bins, *popt)
