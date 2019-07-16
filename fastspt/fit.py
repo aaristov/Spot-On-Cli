@@ -12,6 +12,7 @@
 #- make a standalone version
 
 ## ==== Imports
+# pylint: disable=no-name-in-module
 import time
 import lmfit
 import numpy as np
@@ -20,7 +21,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
+# pylint: disable=unsupported-assignment-operation
 
 ##
 ## ==== Auxiliary functions
