@@ -31,7 +31,7 @@ def add_suffix(path, suffix):
     return abs_name + suffix + ext
 
 def get_extension(path):
-    abs_name, ext = os.path.splitext(path)
+    _, ext = os.path.splitext(path)
     return ext
 
 def save_csv(df:pd.DataFrame, path, suffix=''):
@@ -115,7 +115,7 @@ def open_and_link_ts_table(
     if save_linked_localizations:
         try:
             df = convert_grouped_tracks_to_df(grouped_tracks)
-            ok = save_csv(df, path, suffix='_pytracked_linked_locs')
+            _ = save_csv(df, path, suffix='_pytracked_linked_locs')
         except ValueError:
             print('Unable to save tracks into csv, continue')
 
