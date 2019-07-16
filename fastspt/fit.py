@@ -16,10 +16,11 @@ import time
 import lmfit
 import numpy as np
 from scipy.special import erfc
-from fastspt import fit
 import logging
 
 logger = logging.getLogger(__name__)
+
+
 
 ##
 ## ==== Auxiliary functions
@@ -108,7 +109,7 @@ def fit_kinetics(jump_hist,
         return False
     
     ## Perform the fit
-    fit_result = fit.fit_jump_length_distribution(JumpProb, JumpProbCDF, HistVecJumps, HistVecJumpsCDF, **params)
+    fit_result = fit_jump_length_distribution(JumpProb, JumpProbCDF, HistVecJumps, HistVecJumpsCDF, **params)
     return fit_result
 
 ##
@@ -231,8 +232,13 @@ def compute_jump_length_distribution(trackedPar,
                         _dist = pdist(CurrXY_points)
                         try:
                             TransLengths[CurrFrameJump-1]["Step"].append(_dist)
-                        except IndexError as e:
-                            logger.error(f'Index error happened  in TransLengths[CurrFrameJump-1]["Step"].append(_dist), CurrFrameJump = {CurrFrameJump}, len(TransLengths) = {len(TransLengths)}, trackedPar[i][2][0][k+n] = {trackedPar[i][2][0][k+n]}, trackedPar[i][2][0][k] = {trackedPar[i][2][0][k]}')
+                        except IndexError:
+                            logger.error(f'''Index error happened  in \
+                            TransLengths[CurrFrameJump-1]["Step"].append(_dist),\
+                            CurrFrameJump = {CurrFrameJump}, len(TransLengths)\
+                            = {len(TransLengths)}, trackedPar[i][2][0][k+n]\
+                            = {trackedPar[i][2][0][k+n]}, trackedPar[i][2][0][k]\
+                                 = {trackedPar[i][2][0][k]}''')
                             
 
     ## Calculate the PDF histograms (required for CDF)
