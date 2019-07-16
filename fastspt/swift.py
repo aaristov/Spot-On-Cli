@@ -3,7 +3,93 @@ import pandas as pd
 from tqdm.auto import tqdm
 import re
 from fastspt.plot import plt
+from fastspt import tracklen
+from scipy.optimize import minimize
+from functools import reduce
 
+class StroboscopicDataset:
+    
+    def __init__(self, fps, paths=None, decay_rate=None):
+        self.fps = fps
+        self.paths = paths
+        if decay_rate:
+            self.decay_rate = decay_rate
+        else:
+            self.compute_decay_rate()
+    
+    def set_decay_rate(self, d):
+        self.decay_rate = d
+    
+    def compute_decay_rate(self):
+        self.decay_rate = get_decay_rate_of_bound_molecules(self.paths)
+        
+    def __repr__(self):
+        return f'''\nStroboscopicDataset Object: \n\tFPS: {self.fps}\
+             \r\tPATHS: {len(self.paths)} items,\
+             \r\tDecay rate : {self.decay_rate:.2f}'''
+
+def get_bleaching_unbinding_rate_from_datasets(*datasets:StroboscopicDataset, plot=True):
+    '''
+    Computes bleachung rate and unbinding rate for 2 or more datasets.
+    
+    Return
+    ------
+    opt_bleach_rate: float, per frame, opt_unbind_rate: float, per second
+    '''
+    
+    funcs = [get_bleach_rate_vs_unbind_rate_fun(d.fps, d.decay_rate) for d in datasets]
+    res = find_overlap(*funcs)
+    opt_unbind_rate = res.x
+    mean_bleach_rate = np.mean(list(map(lambda f: f(opt_unbind_rate), funcs)))
+    print (f'bleach rate: {mean_bleach_rate:0.2f} per exposure , unbind rate: {opt_unbind_rate[0]:0.2f} per second')
+    if plot:
+        plt.figure(facecolor='w')
+        r = [opt_unbind_rate - 0.1, opt_unbind_rate + 0.1]
+        [plt.plot(r,f(r), label=str(d.fps) + ' fps') for f, d in zip(funcs, datasets)]
+
+        plt.plot(opt_unbind_rate, mean_bleach_rate, 'ro', label='optimal solution')
+        
+        # pylint: disable=anomalous-backslash-in-string
+        plt.xlabel('$\lambda_{unbind} (sec^{-1})$')
+        plt.ylabel('$\lambda_{bleach} (frame^{-1})$')
+        plt.grid()
+        plt.legend()
+    return mean_bleach_rate, opt_unbind_rate[0]
+
+
+def get_decay_rate_of_bound_molecules(paths, bins=30, max_range=100):
+    
+    fun = get_lengths_of_bound_tracks_from_path 
+
+    bound_lengths_over_replicate = list(map(fun, paths))       
+#     plt.show()
+    fused_bound_lengths_over_replicate = reduce(lambda a, b: a + b, bound_lengths_over_replicate)
+    values, bins, _ = plt.hist(fused_bound_lengths_over_replicate, bins=bins, range=(min(fused_bound_lengths_over_replicate), max_range))
+    plt.xlabel('bound tracks length, frame')
+    vector, _ = bins2range(bins)
+    fit_result, _, decay_rate = fit_exp(values, vector, p0=(1000, 0.1))
+    plt.plot(vector, fit_result)
+    plt.title(f'decay rate: {decay_rate:.2f} per frame')
+    plt.show()
+    return decay_rate
+
+def get_bleach_rate_vs_unbind_rate_fun(fps, decay_rate):
+    '''
+    FPS * λap =  FPS *λbleach + λunbind (per second)
+    λbleach( λunbind) =   λap  -  λunbind  / FPS
+    '''
+    return lambda unbind_rate: - np.array(unbind_rate) / fps + decay_rate
+
+def find_overlap(*linear_funcs):
+    assert len(linear_funcs) > 1
+    sds = []
+    f0 = linear_funcs[0]
+    for f in linear_funcs[1:]:
+        sds.append(lambda x: (f(x) - f0(x)) ** 2)
+    residual = lambda x: sum([sd(x) for sd in sds])
+    
+    popt = minimize(residual, (0.1,), callback=None)
+    return popt
 
 def open_and_group_tracks_swift(path, by='seg.id', exposure_ms=60, min_len=3, max_len=np.inf):
     """
@@ -54,7 +140,7 @@ def make_spoton_dataset_from_swift(data_path):
     return rep
 
 def plot_mjd_hist(tracks, use_column='seg.mjd', weight_by_column='seg.mjd_n', bins=30, range=(0,250), label=''):
-    h_mjd = plt.hist(tracks[use_column], weights=tracks[weight_by_column], bins=bins, range=range, label=label)
+    _ = plt.hist(tracks[use_column], weights=tracks[weight_by_column], bins=bins, range=range, label=label)
     plt.xlabel(f'{use_column} weighted by {weight_by_column}')
     plt.ylabel(f'counts')
 
@@ -88,7 +174,7 @@ def extract_bond_molecules_which_photobleach(tracks_from_swift:pd.DataFrame, lim
     '''
     selected_populations = select_populations(tracks_from_swift, keywords=['static', 'free'])
 #     print(selected_populations.keys())
-    bound_segments, free_segments = selected_populations.values()
+    bound_segments, _ = selected_populations.values()
     if limit_seg_count:
         bound_segments = bound_segments[bound_segments['track.seg_count'] == limit_seg_count]
     print(f'{count_unique_segments(bound_segments)} tracks with single segment')
@@ -100,11 +186,13 @@ def get_lengths_of_bound_tracks(bound_molecules_with_single_segment, min_len=20)
     lengths = list(map(len, bound_tracks))
     return lengths
 
-def get_lengths_of_bound_tracks_from_path(data_path, seg_count=None):
+def get_lengths_of_bound_tracks_from_path(data_path, seg_count=None, min_len=5, plot=False):
+    print(data_path)
     tracks = pd.read_csv(data_path)
     bleaching_bound_molecules = extract_bond_molecules_which_photobleach(tracks, limit_seg_count=seg_count)
-    lengths = get_lengths_of_bound_tracks(bleaching_bound_molecules)
-    plt.hist(lengths, density=True)
+    lengths = get_lengths_of_bound_tracks(bleaching_bound_molecules, min_len=min_len)
+    if plot:
+        plt.hist(lengths, density=True)
     return lengths
 
 def compute_switching_rate(tracks_swift:pd.DataFrame):
@@ -178,3 +266,37 @@ def make_table_with_rates(rates):
         rates_df.loc[f'{i}'] = [koff, kon, compute_expected_bound_fraction(koff, kon)]
 
     return rates_df
+
+
+
+def exponent(x, a, c):
+        return a*np.exp(-x * c)
+
+
+def fit_exp(values, vector, p0=None):
+    '''
+    returns:
+    fit_result, a, c: c - decay rate
+    '''
+    fit_result, popt = tracklen.fit_exponent(values, vector, fun=exponent, p0=p0)
+    a, c = popt
+    print(f'Fit result: {a:.2f} * e^(-x * {c:.2f})')
+    return fit_result, a, c
+    
+
+def bins2range(bins):
+    '''
+    Converts bin edges to bin centers.
+    !!! Only works for even spacing !!!
+
+    Arguments:
+    bins (1D array): bin edges from histogram function
+
+    Returns:
+    bin_range (1D array): centers of bins
+    bin_step (float): size of the bin
+
+    '''
+    bin_step = bins[1] - bins[0]
+    bin_range = bins[:-1] + bin_step / 2
+    return bin_range , bin_step
