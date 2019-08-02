@@ -178,7 +178,7 @@ def select_populations(tracks, from_column='seg.dynamics', keywords=['static', '
        
     return out
 
-def extract_bond_molecules_which_photobleach(tracks_from_swift:pd.DataFrame, limit_seg_count=1):
+def extract_bound_molecules_which_photobleach(tracks_from_swift:pd.DataFrame, limit_seg_count=1):
     '''
     Idea is to select tracks exclusively consisted of bound molecules.
     track.seg_count == 1
