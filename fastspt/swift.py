@@ -61,7 +61,7 @@ def get_decay_rate_of_bound_molecules(paths, bins=30, max_range=100):
     
     fun = get_lengths_of_bound_tracks_from_path 
 
-    bound_lengths_over_replicate = list(map(fun, paths))       
+    bound_lengths_over_replicate = list(map(fun, tqdm(paths)))       
 #     plt.show()
     fused_bound_lengths_over_replicate = reduce(lambda a, b: a + b, bound_lengths_over_replicate)
     values, bins, _ = plt.hist(fused_bound_lengths_over_replicate, bins=bins, range=(min(fused_bound_lengths_over_replicate), max_range))
@@ -75,8 +75,8 @@ def get_decay_rate_of_bound_molecules(paths, bins=30, max_range=100):
 
 def get_bleach_rate_vs_unbind_rate_fun(fps, decay_rate):
     '''
-    FPS * λap =  FPS *λbleach + λunbind (per second)
-    λbleach( λunbind) =   λap  -  λunbind  / FPS
+    FPS * λ_apparent =  FPS *λ_bleach + λ_unbind (per second)
+    λ_bleach( λ_unbind) =   λ_apparent  -  λ_unbind  / FPS 
     '''
     return lambda unbind_rate: - np.array(unbind_rate) / fps + decay_rate
 
@@ -91,7 +91,13 @@ def find_overlap(*linear_funcs):
     popt = minimize(residual, (0.1,), callback=None)
     return popt
 
-def open_and_group_tracks_swift(path, by='seg.id', exposure_ms=60, min_len=3, max_len=np.inf):
+def open_and_group_tracks_swift(
+    path, 
+    by='seg.id', 
+    exposure_ms=60,
+    min_len=3, 
+    max_len=np.inf
+    ):
     """
     Reads csv from path
     Groups tracks - see swift.group_tracks_swift
@@ -140,7 +146,13 @@ def make_spoton_dataset_from_swift(data_path):
     return rep
 
 def plot_mjd_hist(tracks, use_column='seg.mjd', weight_by_column='seg.mjd_n', bins=30, range=(0,250), label=''):
-    _ = plt.hist(tracks[use_column], weights=tracks[weight_by_column], bins=bins, range=range, label=label)
+    _ = plt.hist(
+        tracks[use_column], 
+        weights=tracks[weight_by_column], 
+        bins=bins, 
+        range=range, 
+        label=label
+        )
     plt.xlabel(f'{use_column} weighted by {weight_by_column}')
     plt.ylabel(f'counts')
 
