@@ -201,7 +201,7 @@ def get_lengths_of_bound_tracks(bound_molecules_with_single_segment, min_len=20)
 def get_lengths_of_bound_tracks_from_path(data_path, seg_count=None, min_len=5, plot=False):
     print(data_path)
     tracks = pd.read_csv(data_path)
-    bleaching_bound_molecules = extract_bond_molecules_which_photobleach(tracks, limit_seg_count=seg_count)
+    bleaching_bound_molecules = extract_bound_molecules_which_photobleach(tracks, limit_seg_count=seg_count)
     lengths = get_lengths_of_bound_tracks(bleaching_bound_molecules, min_len=min_len)
     if plot:
         plt.hist(lengths, density=True)
