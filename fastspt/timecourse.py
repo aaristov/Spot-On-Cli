@@ -77,34 +77,12 @@ def get_stats(*reps_fits, names=None):
     return fit_stats
 
 
-
-def get_stats(*reps_fits, names=None):
-    fit_stats = pd.DataFrame(columns=list(reps_fits[0].best_values.keys()) + ['chi2', 'num_tracks', 'time_stamp'])
-    fit_stats.index.name = 'Dataset'
-    for i, fit_result in enumerate(reps_fits):
-        if names:
-            name = names[i].split("/")[-1]
-        else:
-            name = f'rep {i+1}'
-        fit_stats.loc[f'{name}'] = list(fit_result.best_values.values()) + [
-            fit_result.chisqr, 
-            fit_result.params['num_tracks'].value,
-            fit_result.params['time_stamp'].value
-        ]
-
-#     fit_stats.loc['mean'] = fit_stats.mean(axis=0)
-#     fit_stats.loc['std'] = fit_stats.std(axis=0)
-
-    #fit_stats.to_json(folder + '\stats.json')
-
-    return fit_stats
-
 import datetime
 def modification_date(filename):
     t = os.path.getmtime(filename)
     return datetime.datetime.fromtimestamp(t)
 
-def plot_stats(fits):
+def plot_stats(fits, data_paths):
     stats = get_stats(*fits, names=data_paths)
     time_stamp = [modification_date( p) for p in data_paths]
     print(time_stamp)
