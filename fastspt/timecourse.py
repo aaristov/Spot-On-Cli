@@ -55,7 +55,7 @@ def process_xml_with_automatic_fps(path, fit_params=fit_params):
     print('Saving fit_result')
     return fit_result
 
-    def get_stats(*reps_fits, names=None):
+def get_stats(*reps_fits, names=None):
     fit_stats = pd.DataFrame(columns=list(reps_fits[0].best_values.keys()) + ['chi2', 'num_tracks', 'time_stamp'])
     fit_stats.index.name = 'Dataset'
     for i, fit_result in enumerate(reps_fits):
