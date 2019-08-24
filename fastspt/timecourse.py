@@ -7,7 +7,7 @@ import re
 import numpy as np
 
 
-def get_exposure_ms_from_path(path, pattern='ch_(\d*?)ms'):
+def get_exposure_ms_from_path(path, pattern=r'ch_(\d*?)ms'):
     import re
 
     regx = re.compile(pattern)
@@ -61,7 +61,7 @@ def parallel_fit(data_paths, fit_params, override=False):
 
     except Exception as e:
         print(f"Problem with Pool {e}. Fall back to sequential fit")
-        fits = list(map(timecourse.process_xml_with_automatic_fps, data_paths[:]))
+        fits = list(map(process_xml_with_automatic_fps, data_paths[:]))
     
     return fits
 
@@ -183,7 +183,6 @@ def plot_stats(stats, data_paths, start_time=None, save_json_prefix='', json_nam
 
     if save_json_prefix:
         df = put_results_to_dataframe(time_stamp, D_frees, F_bound, num_tracks)
-        folder = save_json_prefix
         path_for_stats = save_json_prefix + json_name
         print(f'Saving stats to {path_for_stats}')
         df.to_json(path_for_stats)
@@ -208,3 +207,23 @@ def plot_stats(stats, data_paths, start_time=None, save_json_prefix='', json_nam
     plt.xlabel(x_label)
     plt.grid()
     plt.show()
+
+
+def moving_average(df, data_column='D_free', time_column='minutes', window=10, step=10):
+    time = df[time_column].values
+    data = df[data_column].values
+    min_time = time.min()
+    max_time = time.max()
+    time_range = np.arange(min_time, max_time, step)
+    def fetch_data(t0): 
+        f = np.logical_and(time < t0 + window, time > t0)
+        return data[f]
+    get_mean_std = lambda t0: [t0, fetch_data(t0).mean(), fetch_data(t0).std()]
+    av_data = list(map(get_mean_std, time_range))
+    return pd.DataFrame(
+        columns=[
+            time_column, 
+            data_column + '_mean', 
+            data_column + '_std'
+        ], data=np.array(av_data)
+    )
