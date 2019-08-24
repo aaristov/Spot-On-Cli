@@ -49,8 +49,12 @@ def read_trackmate_xml(path):
     framerate = float(data['Tracks']['@frameInterval'])/1000. # framerate in ms
     traces = []
     
-    for particle in data['Tracks']['particle']:  
-        traces.append([(float(d['@x']), float(d['@y']), float(d['@t'])*framerate, float(d['@t'])) for d in particle['detection']])
+    try:
+        for particle in data['Tracks']['particle']:  
+            traces.append([(float(d['@x']), float(d['@y']), float(d['@t'])*framerate, float(d['@t'])) for d in particle['detection']])
+    except KeyError as e:
+        print(f'problem with {path}')
+        raise e
     return traces
 
 ## ==== CSV file format
