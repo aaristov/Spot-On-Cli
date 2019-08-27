@@ -5,6 +5,7 @@ import pandas as pd
 import datetime
 import re
 import numpy as np
+from glob import glob
 
 
 def get_exposure_ms_from_path(path, pattern=r'ch_(\d*?)ms'):
@@ -128,13 +129,14 @@ def modification_date(filename):
 
     
 
-def get_tif_path_from(xml_path, extension='.tif'):
-    span = re.search(extension, xml_path)
-    end_of_span = span.span()[1]
-    tif_path = xml_path[:end_of_span]
+def get_tif_path_from(xml_path, extension='.ome.tif'):
+    folder = os.path.dirname(xml_path)
+    # print(folder)
+    tif_path = glob(folder + os.path.sep + '*' + extension)[0]
+    # print(tif_path)
     return tif_path
 
-assert get_tif_path_from('/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif.Tracks.xml') == '/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif'
+assert get_tif_path_from('/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif.Tracks.xml') == '/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif', get_tif_path_from('/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif.Tracks.xml')
 
 def put_results_to_dataframe(times, D_frees, F_bounds, num_tracks):
 
