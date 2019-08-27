@@ -135,8 +135,9 @@ def modification_date(filename):
 def get_tif_path_from(xml_path, extension='.ome.tif'):
     folder = os.path.dirname(xml_path)
     # print(folder)
+    flist = glob(folder + os.path.sep + '*' + extension)
     try:
-        tif_path = glob(folder + os.path.sep + '*' + extension)[0]
+        tif_path = flist[0]
     except IndexError:
         print(f'index error folder {folder}')
         print(f'tif_path: {tif_path}')
