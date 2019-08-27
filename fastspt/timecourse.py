@@ -140,7 +140,7 @@ def get_tif_path_from(xml_path, extension='.ome.tif'):
         tif_path = flist[0]
     except IndexError:
         print(f'index error folder {folder}')
-        print(f'tif_path: {tif_path}')
+        print(f'flist: {flist}')
         return xml_path
     # print(tif_path)
     return tif_path
