@@ -76,7 +76,10 @@ def process_xml_with_automatic_fps(path, fit_params=fit_params, override=False):
         return stats
 
     exp = get_exposure_ms_from_path(path)
-    exposure = exp / 1000.
+    if exp:
+        exposure = exp / 1000.
+    else: 
+        exposure = fit_params['dT']
     time_stamp = os.path.getmtime(path)
     print(exposure, ' ms')
     
