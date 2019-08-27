@@ -136,7 +136,7 @@ def get_tif_path_from(xml_path, extension='.ome.tif'):
     # print(tif_path)
     return tif_path
 
-assert get_tif_path_from('/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif.Tracks.xml') == '/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif', get_tif_path_from('/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif.Tracks.xml')
+# assert get_tif_path_from('/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif.Tracks.xml') == '/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif', get_tif_path_from('/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif.Tracks.xml')
 
 def put_results_to_dataframe(times, D_frees, F_bounds, num_tracks):
 
