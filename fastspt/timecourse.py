@@ -156,9 +156,18 @@ def put_results_to_dataframe(times, D_frees, F_bounds, num_tracks):
     )
     return df
 
-def plot_stats(stats, data_paths, start_time=None, save_json_prefix='', json_name='stats.json'):
+def plot_stats(
+    stats, 
+    data_paths, 
+    start_time=None, 
+    save_folder='', 
+    save_title='',
+    json_name='stats.json',
+    csv_name='stats.csv'
+    ):
     '''
     Plots D_free, F_bound, num_tracks over time
+    saves csv, json, pdf if save_folder provided
     Parameters:
     -----------
     stats: list of pd.Dataframes
@@ -192,28 +201,41 @@ def plot_stats(stats, data_paths, start_time=None, save_json_prefix='', json_nam
     num_tracks = stats_fused.num_tracks.values
 #     time_stamp = stats.time_stamp.values
 
-    if save_json_prefix:
+    if save_folder:
         df = put_results_to_dataframe(time_stamp, D_frees, F_bound, num_tracks)
-        path_for_stats = save_json_prefix + json_name
+        path_for_stats = save_folder + json_name
         print(f'Saving stats to {path_for_stats}')
         df.to_json(path_for_stats)
+        path_for_csv = save_folder + csv_name
+        print(f'Saving stats to {path_for_csv}')
+        df.to_csv(path_for_csv)
     else:
         print('Warning, stats are not saved')
     
+    fig_params = dict(dpi=72, figsize=(4, 3), facecolor='white')
 
-    plt.plot(time_stamp, D_frees, 'ro')
-    plt.title('D_free vs time')
+    plt.figure(**fig_params)
+    plt.plot(time_stamp, D_frees, 'r.')
+    # plt.title('D_free vs time')
     plt.xlabel(x_label)
+    plt.ylabel(r'$D_{free}, \mu m^2 / sec$')
     plt.grid()
+    plt.tight_layout()
+    plt.savefig(save_folder + 'D_free_minutes.pdf')
     plt.show()
 
-    plt.plot(time_stamp, F_bound, 'ro')
-    plt.title('F_bound vs time')
+    plt.figure(**fig_params)
+    plt.plot(time_stamp, F_bound * 100., 'r.')
+    # plt.title('F_bound vs time')
     plt.xlabel(x_label)
+    plt.ylabel(r'$F_{bound}, \%$')
     plt.grid()
+    plt.tight_layout()
+    plt.savefig(save_folder + 'F_bound_minutes.pdf')
     plt.show()
 
-    plt.plot(time_stamp, num_tracks, 'ro')
+    plt.figure(**fig_params)
+    plt.plot(time_stamp, num_tracks, 'r.')
     plt.title('num_tracks vs time')
     plt.xlabel(x_label)
     plt.grid()
