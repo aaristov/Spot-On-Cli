@@ -145,16 +145,33 @@ def make_spoton_dataset_from_swift(data_path):
     rep = group_tracks_swift(tracks, by='seg.id', min_len=5, max_len=30)
     return rep
 
+def show_pops(path):
+    print(path)
+    tracks = pd.read_csv(path)
+    pops = select_populations(tracks)
+    n_segs = {}
+    for k in pops.keys():
+        n = plot_mjd_hist(pops[k], label=k)
+        n_segs[k] = n
+    plt.legend()
+    plt.show()
+    return n_segs
+
 def plot_mjd_hist(tracks, use_column='seg.mjd', weight_by_column='seg.mjd_n', bins=30, range=(0,250), label=''):
-    _ = plt.hist(
+    h, _, _ = plt.hist(
         tracks[use_column], 
         weights=tracks[weight_by_column], 
         bins=bins, 
         range=range, 
-        label=label
+        label=label,
+        alpha=0.8,
+        lw=1
         )
     plt.xlabel(f'{use_column} weighted by {weight_by_column}')
     plt.ylabel(f'counts')
+    sum_h = sum(h)
+    print(f'Sum for {label} = {sum_h}')
+    return sum_h
 
 def count_unique_segments(sub_tracks):
     return len(np.unique(sub_tracks["seg.id"]))
@@ -189,7 +206,7 @@ def extract_bound_molecules_which_photobleach(tracks_from_swift:pd.DataFrame, li
     bound_segments, _ = selected_populations.values()
     if limit_seg_count:
         bound_segments = bound_segments[bound_segments['track.seg_count'] == limit_seg_count]
-    print(f'{count_unique_segments(bound_segments)} tracks with single segment')
+        print(f'{count_unique_segments(bound_segments)} tracks with single segment')
     return bound_segments
     
 def get_lengths_of_bound_tracks(bound_molecules_with_single_segment, min_len=20):
@@ -207,12 +224,18 @@ def get_lengths_of_bound_tracks_from_path(data_path, seg_count=None, min_len=5, 
         plt.hist(lengths, density=True)
     return lengths
 
-def compute_switching_rate(tracks_swift:pd.DataFrame):
+def compute_switching_rate(tracks_swift:pd.DataFrame, frame_rate=None):
     '''
     Computes koff, kon rate from swift table with dynamics column.
     
     p(diff -> bound | diffusive) = N(diff -> bound) / N(diffusive)
+    
+    Return:
+    -------
+    a dictionary with all the shit computed
     '''
+
+    out = {}
     bound_locs, diff_locs = select_populations(tracks_swift, keywords=['static', 'free']).values()
     bound_tracks = group_tracks_swift(bound_locs, max_len=np.inf)
     diff_tracks = group_tracks_swift(diff_locs, max_len=np.inf)
@@ -233,20 +256,46 @@ def compute_switching_rate(tracks_swift:pd.DataFrame):
         
         n_bound_to_diff += len(re.findall('static-free', states_short)) 
         n_diff_to_bound += len(re.findall('free-static', states_short))
-    print(f'b -> u : {n_bound_to_diff},  per {n_bound_locs} bound locs')
-    print(f'u -> b : {n_diff_to_bound},  per {n_diff_locs} diffusive locs')
-    
-        
-    return n_bound_to_diff/n_bound_locs, n_diff_to_bound/n_diff_locs
 
-def process_switching_rate_from_swift(data_path):
+        u_rate = n_bound_to_diff/n_bound_locs
+        b_rate = n_diff_to_bound/n_diff_locs
+    print(f'b -> u : {n_bound_to_diff},  \
+        per {n_bound_locs} bound locs, i.e. \
+            unbinding rate {u_rate:.2E} per frame')
+    out['b -> u'] = {
+        'n_events': n_bound_to_diff,
+        'n_locs': n_bound_locs,
+        'rate_per_frame': u_rate
+    }
+    if frame_rate:
+        u_rate_sec = u_rate * frame_rate
+        print(f'{u_rate_sec:.1E} per second')
+        out['b -> u']['rate_per_second'] = u_rate_sec
+
+    print(f'u -> b : {n_diff_to_bound},  per {n_diff_locs} diffusive locs, i.e. binding rate {b_rate:.2E}.')
+    out['u -> b'] = {
+        'n_events': n_diff_to_bound,
+        'n_locs': n_diff_locs,
+        'rate_per_frame': b_rate
+    }
+    if frame_rate:
+        b_rate_sec = b_rate * frame_rate
+        print(f'{b_rate * frame_rate:.1E} per second')
+        out['u -> b']['rate_per_second'] = b_rate_sec
+
+    print(f'bound fraction = {b_rate / (u_rate + b_rate):.1%}')
+    out['bound fraction'] = b_rate / (u_rate + b_rate)
+        
+    return out
+
+def process_switching_rate(data_path, frame_rate=None):
     """
     example:
         rates = list(map(process_switching_rate_from_swift, data_paths))
     """
     print(data_path)
     tracks = pd.read_csv(data_path)
-    return compute_switching_rate(tracks)
+    return compute_switching_rate(tracks, frame_rate)
 
 
 def compute_expected_bound_fraction(koff, kon):
