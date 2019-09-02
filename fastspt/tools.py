@@ -14,6 +14,7 @@ import trackpy as tp
 import pandas as pd
 import matplotlib.pyplot as plt
 from functools import reduce
+import logging
 
 tp.ignore_logging()
 
@@ -144,6 +145,7 @@ def link_ts_table(
     if max_frame:
         df = df[df.frame <= min_frame]
     if verbose: df.head()
+    print(f'Linking with max distance {link_distance_um} um')
     tracks = tp.link_df(df, search_range=link_distance_um, memory=link_memory)
     if verbose: print(tracks.head())
     # print('\n')
