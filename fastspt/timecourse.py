@@ -147,13 +147,19 @@ def get_tif_path_from(xml_path, extension='.ome.tif'):
 
 # assert get_tif_path_from('/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif.Tracks.xml') == '/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif', get_tif_path_from('/mnt/c/Users/Andrey/data/2019/0822-AV51-OD0.2-DCS1mM-PI-diluted-plated-14h30/tracking_488_prebleach_60ms_no_strobo_1/tracking_488_prebleach_60ms_no_strobo_1_MMStack_Pos0.ome.tif.Tracks.xml')
 
-def put_results_to_dataframe(times, D_frees, F_bounds, num_tracks):
+def put_results_to_dataframe(**dict_items):
 
-    df = pd.DataFrame(
-        #index=times, 
-        columns=['minutes', 'D_free', 'F_bound', 'num_tracks'],
-        data=np.array([times, D_frees, F_bounds, num_tracks]).T
-    )
+    columns = dict_items.keys()
+    data = [dict_items[k] for k in columns]
+    try:
+        df = pd.DataFrame(
+            #index=times, 
+            columns=columns,
+            data=np.array(data).T
+        )
+    except ValueError as e:
+        print('data :', data)
+        raise e
     return df
 
 def plot_stats(
@@ -163,7 +169,8 @@ def plot_stats(
     save_folder='', 
     save_title='',
     json_name='stats.json',
-    csv_name='stats.csv'
+    csv_name='stats.csv',
+    minutes=None
     ):
     '''
     Plots D_free, F_bound, num_tracks over time
@@ -200,15 +207,28 @@ def plot_stats(
     F_bound = stats_fused.F_bound.values
     num_tracks = stats_fused.num_tracks.values
 #     time_stamp = stats.time_stamp.values
+    out = {
+        'minutes': time_stamp, 
+        'D_free': D_frees,
+        'F_bound': F_bound, 
+        'num_tracks': num_tracks
+        }
+
+    if minutes:
+        groups = find_regexp_in_the_paths(data_paths, minutes)
+        if groups:
+            print(f'Found minutes: {groups}')
+            out['sample_preparation_minutes'] = groups
 
     if save_folder:
-        df = put_results_to_dataframe(time_stamp, D_frees, F_bound, num_tracks)
+        df = put_results_to_dataframe(**out)
+        df = df.sort_values('minutes')
         path_for_stats = save_folder + json_name
         print(f'Saving stats to {path_for_stats}')
         df.to_json(path_for_stats)
         path_for_csv = save_folder + csv_name
         print(f'Saving stats to {path_for_csv}')
-        df.to_csv(path_for_csv)
+        df.to_csv(path_for_csv, index=False)
     else:
         print('Warning, stats are not saved')
     
@@ -241,6 +261,39 @@ def plot_stats(
     plt.grid()
     plt.show()
 
+def find_regexp_in_the_paths(paths, regexp, convert_to=int):
+    # print(paths)
+    rem = re.compile(regexp)
+    # print([rem.findall(p) for p in paths])
+    try:
+        items = list(map(lambda p: convert_to(rem.findall(p)[0]), paths))
+        return items
+    except IndexError:
+        print(f'ERROR: Nothing found with {regexp} in the paths')
+        return False
+
+    
+
+def group_paths(list_of_str, by_regexp=r'/.*slide_(\d+?)m', convert_to=int, verbose=True):
+    '''
+    Groups string items in the list by unique accurances of regexp
+    
+    Return:
+    -------
+    (groups, grouped_items): 
+        list of occurances, list of grouped items
+           
+    '''
+    
+    times = find_regexp_in_the_paths(list_of_str, by_regexp)
+    groups = list(np.unique(times))
+    if verbose:
+        print(f'Found following unique accurances: {groups}')
+    ind = [list((times == u).nonzero()[0]) for u in groups]
+    grouped_items = [[list_of_str[i] for i in ii] for ii in ind]
+    if verbose:
+        print(grouped_items)
+    return groups, grouped_items
 
 def moving_average(df, data_column='D_free', time_column='minutes', window=10, step=10):
     time = df[time_column].values
