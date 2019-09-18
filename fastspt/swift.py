@@ -284,7 +284,7 @@ def compute_switching_rate(tracks_swift:pd.DataFrame, frame_rate=None):
         out['u -> b']['rate_per_second'] = b_rate_sec
 
     bound_fraction = compute_expected_bound_fraction(u_rate, b_rate)
-    print(f'bound fraction = {bound_fraction):.1%}')
+    print(f'bound fraction = {bound_fraction:.1%}')
     out['bound fraction'] = bound_fraction
         
     return out
