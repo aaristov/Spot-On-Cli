@@ -108,17 +108,24 @@ def open_and_group_tracks_swift(
     tracks = group_tracks_swift(df, by, exposure_ms, min_len, max_len)
     return tracks
 
-def group_tracks_swift(df:pd.DataFrame, by='seg.id', exposure_ms = 60, min_len=3, max_len=20):
+def group_tracks_swift(
+    df:pd.DataFrame, 
+    columns_to_extract=['x [nm]', 'y [nm]', 'seg.id', 'frame'], 
+    group_by='seg.id', 
+    exposure_ms = 60, 
+    min_len=3, 
+    max_len=np.inf):
     tracks = []
     try:
-        xyif = df[['x [nm]', 'y [nm]', by, 'frame']].sort_values(by)
-    except KeyError:
-        xyif = df[['x', 'y', by, 'frame']].sort_values(by)
+        xyif = df[columns_to_extract].sort_values(group_by)
+    except KeyError as e:
+        print(f'error in colunt names', *e.args)
+        return []
     
     print(len(xyif), 'localizations')
-    seg_ids = xyif[by]
-    _, ids = np.unique(seg_ids, return_index=True)
-    print(len(ids), "unique ", by)
+    seg_ids = xyif[group_by]
+    unique_ids = np.unique(seg_ids)
+    print(len(unique_ids), "unique ", group_by)
     time = xyif.frame.values
     if exposure_ms:
         time = time * exposure_ms * 1.e-3
@@ -126,9 +133,10 @@ def group_tracks_swift(df:pd.DataFrame, by='seg.id', exposure_ms = 60, min_len=3
     xytf = xyif.values
     xytf[:, 2] = time
     xytf[:, :2] = xytf[:, :2] / 1000. # from nm to um
-            
-    for i, ii in tqdm(zip(ids[:-1], ids[1:]), disable=True):
-        track = xytf[i:ii]
+    
+    # ids = np.insert(ids, len(ids), None)
+    for id_ in unique_ids:
+        track = xytf[xyif[group_by] == id_]
         try:
             if len(track) >= min_len and len(track) <= max_len:
                 track_sorted_by_frame = track[np.argsort(track[:,3])]
@@ -142,7 +150,7 @@ def group_tracks_swift(df:pd.DataFrame, by='seg.id', exposure_ms = 60, min_len=3
 
 def make_spoton_dataset_from_swift(data_path):
     tracks = pd.read_csv(data_path)
-    rep = group_tracks_swift(tracks, by='seg.id', min_len=5, max_len=30)
+    rep = group_tracks_swift(tracks, group_by='seg.id', min_len=5, max_len=30)
     return rep
 
 def show_pops(path):
