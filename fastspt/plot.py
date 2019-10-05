@@ -7,7 +7,7 @@
 
 ## ==== Imports
 import matplotlib as mpl
-mpl.use('TkAgg')
+#mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -59,7 +59,8 @@ def plot_track_xy_sd(track_xytf, figsize=(8,4), xy_radius=0.3, sd_max=0.2, bound
 def plot_kinetics_fit(jump_hist,
                       fit_result:lmfit.model.ModelResult, 
                       CDF1=True,
-                      states=2, 
+                      states=2,
+                      save='', 
                       **fit_params) -> bool:
     
     h1=jump_hist
@@ -90,15 +91,16 @@ def plot_kinetics_fit(jump_hist,
     if CDF1:
         y = y * float(len(HistVecJumpsCDF))/float(len(HistVecJumps))
     #plt.figure(figsize=(18,8)) # Initialize the plot
-    plot.plot_histogram(HistVecJumps, JumpProb, HistVecJumpsCDF, y, ) ## Read the documentation of this function to learn how to populate all the 'na' fields
-    return True
+    fig = plot.plot_histogram(HistVecJumps, JumpProb, HistVecJumpsCDF, y, ) ## Read the documentation of this function to learn how to populate all the 'na' fields
+    
+    return fig
 
 
 def plot_histogram(HistVecJumps, emp_hist, HistVecJumpsCDF=None, sim_hist=None,
                    TimeGap=None, SampleName=None, CellNumb=None,
                    len_trackedPar=None, Min3Traj=None, CellLocs=None,
                    CellFrames=None, CellJumps=None, ModelFit=None,
-                   D_free=None, D_bound=None, F_bound=None, figsize=(18,8) ):
+                   D_free=None, D_bound=None, F_bound=None, figsize=(18,8) ) -> plt.figure:
     """Function that plots an empirical histogram of jump lengths,
     with an optional overlay of simulated/theoretical histogram of 
     jump lengths"""
@@ -140,7 +142,7 @@ def plot_histogram(HistVecJumps, emp_hist, HistVecJumpsCDF=None, sim_hist=None,
     cmap = plt.get_cmap('viridis')
     colour = [cmap(i) for i in np.linspace(0, 1, number)]
 
-    plt.figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
     
     for i in range(JumpProb.shape[0]-1, -1, -1):
         new_level = (i)*histogram_spacer
@@ -178,6 +180,6 @@ def plot_histogram(HistVecJumps, emp_hist, HistVecJumpsCDF=None, sim_hist=None,
               locs_per_frame,
               CellJumps))
     plt.yticks([])
-    plt.show()
+    
 
-    return True
+    return fig

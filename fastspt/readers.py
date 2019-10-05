@@ -8,6 +8,21 @@ import scipy.io, os, json, xmltodict
 import numpy as np
 import pandas as pd
 
+
+def get_exposure_ms_from_path(path, pattern='bleach_(.*?)ms_'):
+    import re
+
+    regx = re.compile(pattern)
+    found = regx.findall(path)
+    if found:
+        return float(found[0])
+    else:
+        return None
+    
+assert get_exposure_ms_from_path('bleach_1.7ms_no_strobo') == 1.7
+assert get_exposure_ms_from_path('bleach_60ms_strobo_10ms') == 60
+
+
 ## ==== evalSPT
 def read_evalspt(fn, framerate, pixelsize):
     return read_arbitrary_csv(fn, col_traj=3, col_x=0, col_y=1, col_frame=2,
@@ -49,8 +64,12 @@ def read_trackmate_xml(path):
     framerate = float(data['Tracks']['@frameInterval'])/1000. # framerate in ms
     traces = []
     
-    for particle in data['Tracks']['particle']:  
-        traces.append([(float(d['@x']), float(d['@y']), float(d['@t'])*framerate, float(d['@t'])) for d in particle['detection']])
+    try:
+        for particle in data['Tracks']['particle']:  
+            traces.append([(float(d['@x']), float(d['@y']), float(d['@t'])*framerate, float(d['@t'])) for d in particle['detection']])
+    except KeyError as e:
+        print(f'problem with {path}')
+        raise e
     return traces
 
 ## ==== CSV file format

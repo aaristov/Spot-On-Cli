@@ -14,6 +14,7 @@ import trackpy as tp
 import pandas as pd
 import matplotlib.pyplot as plt
 from functools import reduce
+import logging
 
 tp.ignore_logging()
 
@@ -144,6 +145,7 @@ def link_ts_table(
     if max_frame:
         df = df[df.frame <= min_frame]
     if verbose: df.head()
+    print(f'Linking with max distance {link_distance_um} um')
     tracks = tp.link_df(df, search_range=link_distance_um, memory=link_memory)
     if verbose: print(tracks.head())
     # print('\n')
@@ -210,13 +212,16 @@ def load_matlab_dataset_from_path(path):
     return np.asarray(mat['trackedPar'][0])
 
 
-def auto_fit(cell_spt, fit_params ):
+def auto_fit(cell_spt, fit_params, return_plot=False ):
     '''
     Generates histograms and fits kinetic model according to intialization dictionary fit_params
     
     returns:
-    
-    lmfit.model.ModelResult
+    if return_plot is False:
+        lmfit.model.ModelResult
+
+    if return_plot is True:
+        returns: (lmfit.model.ModelResult, plt.figure)
     
     '''
     
@@ -231,10 +236,19 @@ def auto_fit(cell_spt, fit_params ):
     fit_result = fit_kinetics(jump_histrogram,
                              **fit_params)
     
-    if fit_params['plot_result']: plot.plot_kinetics_fit(jump_hist=jump_histrogram,  
-                                            fit_result=fit_result, **fit_params)
-    
-    return fit_result
+    fig = None
+    if fit_params['plot_result']: 
+        fig = plot.plot_kinetics_fit(
+            jump_hist=jump_histrogram,  
+            fit_result=fit_result, 
+            **fit_params
+        )
+        plt.show()
+
+    if return_plot:
+        return fit_result, fig
+    else:
+        return fit_result
     
 def get_jump_length_histrogram(cell_spt, CDF=False, CDF1 = True, **kwargs):
     '''
