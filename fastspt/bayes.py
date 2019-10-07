@@ -38,7 +38,7 @@ def get_jd(xy:np.ndarray, lag=1, extrapolate=False):
     else:
         return []
 
-def classify_bound_segments(track:sim.Track, sigma:float, max_lag:int=4):
+def classify_bound_segments(track:sim.Track, sigma:float, max_lag:int=4, col_name='predicition', extrapolate_edges=True):
     jds = [get_jd(track.xy, lag=l, extrapolate=1) for l in range(1,max_lag+1)]
 
     jds = list(filter(len, jds))
@@ -46,7 +46,12 @@ def classify_bound_segments(track:sim.Track, sigma:float, max_lag:int=4):
     p_unbinds = list(map(lambda i: list(map(lambda x: cdf_unbound(sigma, x), jds[i])), range(len(jds))))
 #     print(p_unbinds)
     try:
-        bound_vector = gf1(np.median(p_unbinds, axis=0), max_lag // 2) > 0.5
+        hl = max_lag // 2
+        bound_vector = gf1(np.median(p_unbinds, axis=0), hl) > 0.5
+        if extrapolate_edges:
+            bound_vector[:hl] = bound_vector[hl]
+            bound_vector[-hl:] = bound_vector[-hl - 1]
+        
         
     except TypeError as e:
         print(track)
@@ -55,5 +60,5 @@ def classify_bound_segments(track:sim.Track, sigma:float, max_lag:int=4):
         raise e
     
 #     new_track = np.insert(track, track.shape[1], bound_vector, axis=1)
-    new_track = track.add_column('prediction', bound_vector, int)
+    new_track = track.add_column(col_name, bound_vector, int)
     return new_track
