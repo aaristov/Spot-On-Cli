@@ -46,7 +46,7 @@ def classify_bound_segments(track:sim.Track, sigma:float, max_lag:int=4):
     p_unbinds = list(map(lambda i: list(map(lambda x: cdf_unbound(sigma, x), jds[i])), range(len(jds))))
 #     print(p_unbinds)
     try:
-        bound_vector = gf1(np.median(p_unbinds, axis=0), max_lag) > 0.5
+        bound_vector = gf1(np.median(p_unbinds, axis=0), max_lag // 2) > 0.5
         
     except TypeError as e:
         print(track)
