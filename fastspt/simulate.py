@@ -125,7 +125,7 @@ def track(
         dxy = np.random.standard_normal(size=(2,)) * D_
         
 #         dxytsb.loc[steps] = [xy[0], xy[1], steps * dt + start_time, sigma, int(bound)]
-        dxytsbi.append([dxy[0], dxy[1], steps * dt + start_time, steps, int(not bound), track_id])
+        dxytsbi.append([dxy[0], dxy[1], steps * dt + start_time, 0, steps, int(not bound), track_id])
         steps += 1
     
     out = np.array(dxytsbi)
@@ -134,7 +134,7 @@ def track(
     out[:, :2] = out[:, :2] + sigma * np.random.standard_normal(size=(len(out), 2))
     out[:, 3] = sigma.mean(axis=1)
   
-    return Track(out, columns=['x', 'y', 't', 'f', 'free', 'id'])
+    return Track(out, columns=['x', 'y', 't', 'sigma', 'frame', 'free', 'id'])
 
 def tracks(
     num_tracks = 1e3,
