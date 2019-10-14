@@ -20,6 +20,9 @@ class Track:
     def sub_columns(self, ind):
         return self.array[:, ind]
 
+    def crop_frames(self, start, end):
+        return Track(self.array[start:end], self.columns, self.units)
+        
     def col(self, name):
         return np.ravel(self.__getattr__(name))
 
