@@ -1,7 +1,13 @@
 import numpy as np
 import fastspt.simulate as sim
+from fastspt import swift
 from scipy.ndimage import gaussian_filter1d as gf1
 from functools import reduce
+from tqdm.auto import tqdm
+import os
+import json
+import pandas as pd
+
 
 d_ = lambda time, sigma, D: D * time + sigma ** 2
 p_jd = lambda time, sigma, D: lambda r: r / (2 * d_( time, sigma, D)) * np.exp(- r ** 2 / ( 4 * d_( time, sigma, D)))
@@ -84,12 +90,30 @@ sum_list = lambda l: reduce(lambda a, b: a + b, l)
 
 
 
-def get_switching_rates(xytfu:sim.Track, fps:float, column='free'):
+def get_switching_rates(xytfu:sim.Track, fps:float, lag:int=1, column='free'):
+    '''
+    if lag is more than 1, halpf of this length will be cut off the ends of the track to avoid artefacts
+
+    Return:
+    -------
+    stats: dict
+        {'F_bound': n_bound_spots / n_total_spots, 'u_rate_frame': u_rate_frame, 'b_rate_frame': b_rate_frame }
+    '''
+    assert isinstance(lag, int)
+
+    if lag>1:
+        n_tracks = len(xytfu)
+        s = lag // 2
+        e = lag - s
+        
+        xytfu = filter(lambda t: len(t) > lag + 1, xytfu)
+        xytfu = list(map(lambda t: t.crop_frames(s, -e), xytfu))
+        print(f'Due to lag={lag}, {len(xytfu)} tracks left out of {n_tracks} with len > {lag + 1}')
 
     n_bound_spots = sum_list(map(lambda a: sum(a.col(column)[:] == 0), xytfu))
     n_bound_spots_for_rates = sum_list(map(lambda a: sum(a.col(column)[:-1] == 0), xytfu))
     n_unbound_spots_for_rates = sum_list(map(lambda a: sum(a.col(column)[:-1] == 1), xytfu))
-    print(n_bound_spots, n_bound_spots_for_rates)
+    # print(n_bound_spots, n_bound_spots_for_rates)
     n_total_spots = sum_list(map(lambda a: len(a), xytfu))
 
     
@@ -106,12 +130,105 @@ def get_switching_rates(xytfu:sim.Track, fps:float, column='free'):
     n_switch_bind = get_n_switch_bind(xytfu)
 
     print(f'{n_switch_bind} binding events, {n_switch_unbind} unbinding events')
-    fps = 15
     u_rate_frame = n_switch_unbind / n_bound_spots_for_rates
     b_rate_frame = n_switch_bind / n_unbound_spots_for_rates
     print(f'Unbinding switching rates: {u_rate_frame:.1%} per frame, {u_rate_frame * fps:.1%} per second {fps} fps')
     print(f'Binding switching rates: {b_rate_frame:.1%} per frame, {b_rate_frame * fps:.1%} per second {fps} fps')
     print(f'Bound fraction based on switching rates: {b_rate_frame / (b_rate_frame + u_rate_frame):.1%}')
     
-    return {'F_bound': n_bound_spots / n_total_spots, 'u_rate_frame': u_rate_frame, 'b_rate_frame': b_rate_frame }
+    return {'F_bound': n_bound_spots / n_total_spots, 'u_rate_frame': u_rate_frame, 'b_rate_frame': b_rate_frame, 'F_bound_from_rates': b_rate_frame / (u_rate_frame + b_rate_frame) }
+
+def classify_csv_tracks(
+    tracks:sim.Track, 
+    max_lag:int=4, 
+    col_name='uncertainty_xy [nm]', 
+    use_map=map
+    ):
+    '''
+    Runs bayes.classify_bound_segments on a list of simulate.Track tracks.
+    '''
+    return list(use_map(lambda t: \
+         classify_bound_segments(
+            t, 
+            sigma=t.col(col_name).mean(), 
+            max_lag=max_lag,
+            extrapolate_edges=False,
+            verbose=False
+        ), 
+        tqdm(tracks)))
+  
+
+def get_rates_csv(csv_path='', fps=15, lag=4, force=False, **kwargs):
+    '''
+    Reads csv with tracks from swift using pandas.
+    Groups tracks using `track.id`.
+    Performs Bayes classification on tracks (bound/unbound) and computed switching rates.
+    Return disctionary and saves rates.json to the disk.
     
+    Parameters:
+    -----------
+    csv_path: str
+        Csv file with tracks from Swift. 
+        Must contain x [nm], y [nm], frame, track.id, seg.id, uncertainty_xy [nm]
+    
+    fps: int
+        frames per second.
+    
+    lag: int
+        how many jumps to consider in the classification
+        
+    force: bool
+        If force = False, the function tries to find .rates.json file and recover it. 
+        If force = True, you want to reanalyse the data.
+        
+    **kwargs: dict
+        Additinal information to include to output.
+        Doesn\'t change the analysis.
+        
+    Return:
+    -------
+    {
+        'F_bound': n_bound_spots / n_total_spots, 
+        'u_rate_frame': u_rate_frame, 
+        'b_rate_frame': b_rate_frame, 
+        'F_bound_from_rates': b_rate_frame / (u_rate_frame + b_rate_frame),
+        **kwargs
+    }
+    '''
+    
+    if not os.path.exists(csv_path):
+        raise ValueError(f'wrong csv_path {csv_path}')
+    
+    print('Analysing ', csv_path)
+    
+    json_path = csv_path.replace('.csv', '.rates.json')
+    
+    if os.path.exists(json_path) and not force:
+        with open(json_path) as fp:
+            out_dict = json.load(fp)
+        print(f'Found `{json_path}`, recovering data. Use force=True to reanalyse.')
+        return out_dict
+            
+    df = pd.read_csv(csv_path)
+    
+    tracks_with_sigma = swift.group_tracks_swift(
+            df, 
+            additional_columns=['seg.id', 'uncertainty_xy [nm]'],
+            additional_scale=[1, 0.001],
+            additional_units=[int, 'um'],
+            group_by='track.id',
+            min_len=5,
+            max_len=50
+            )
+    c_csv_tracks = classify_csv_tracks(tracks_with_sigma[:], lag)
+    stats = get_switching_rates(c_csv_tracks, fps, column='prediction')
+    stats['path'] = csv_path
+    stats['lag'] = lag
+    
+    out_dict = {**stats, **kwargs}
+    
+    with open(json_path, 'w') as fp:
+        json.dump(out_dict, fp)
+        print(f'saved data to {json_path}')
+            
+    return out_dict
