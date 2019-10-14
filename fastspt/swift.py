@@ -136,7 +136,7 @@ def group_tracks_swift(
 
     tracks = []
     columns = ['x [nm]', 'y [nm]', group_by, 'frame'] + additional_columns
-    out_columns = ['x', 'y', 'time', 'frame'] + additional_columns
+    out_columns = ['x', 'y', 'time', 'frame', group_by] + additional_columns
     if convert_nm_um:
         units = ['um', 'um', 'sec', int]
     else:
@@ -158,13 +158,17 @@ def group_tracks_swift(
     seg_ids = xyif[group_by]
     _, ids = np.unique(seg_ids, return_index=True)
     print(len(ids), "unique ", group_by)
-    time = xyif.frame.values
+    frames = xyif.frame.values
     if exposure_ms:
-        time = time * exposure_ms * 1.e-3
+        time = frames * exposure_ms * 1.e-3
     
     xytf = xyif.values
+    sort_by_values = xytf[:, 2].copy()
     xytf[:, 2] = time
     xytf[:, :2] = xytf[:, :2] / 1000. # from nm to um
+
+    xytf = np.insert(xytf, 4, sort_by_values, axis=1)
+    assert len(xytf[0]) == len(out_columns), xytf.shape
             
     for i, ii in tqdm(zip_longest(ids[:], ids[1:]), disable=True):
         track = xytf[i:ii]
