@@ -162,6 +162,12 @@ def put_results_to_dataframe(**dict_items):
         raise e
     return df
 
+def get_interval_minutes(*time_stamp, start_time:str="00:00"):
+    h, m = list(map(int, start_time.split(':')))
+    t0 = time_stamp[0].replace(hour=h, minute=m)
+    time_interval_mins = [float((t - t0).total_seconds()) / 60. for t in time_stamp]
+    return time_interval_mins
+
 def plot_stats(
     stats, 
     data_paths, 
@@ -194,10 +200,11 @@ def plot_stats(
     stats_fused = pd.concat(stats_good)
     # stats = get_stats(*fits, names=data_paths)
     time_stamp = [modification_date( p) for p in data_paths]
+
+    
+
     if start_time:
-        h, m = list(map(int, start_time.split(':')))
-        t0 = time_stamp[0].replace(hour=h, minute=m)
-        time_stamp = [float((t - t0).total_seconds()) / 60. for t in time_stamp]
+        time_stamp = get_interval_minutes(*time_stamp, start_time=start_time)
         x_label = 'minutes'
     else:
         time_stamp = [t.time() for t in time_stamp]
@@ -270,7 +277,7 @@ def find_regexp_in_the_paths(paths, regexp, convert_to=int):
         return items
     except IndexError:
         print(f'ERROR: Nothing found with {regexp} in the paths')
-        return False
+        return [None] * len(paths)
 
     
 

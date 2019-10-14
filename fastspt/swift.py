@@ -6,6 +6,8 @@ from fastspt.plot import plt
 from fastspt import tracklen
 from scipy.optimize import minimize
 from functools import reduce
+from itertools import zip_longest
+from fastspt.simulate import Track
 
 class StroboscopicDataset:
     
@@ -108,31 +110,78 @@ def open_and_group_tracks_swift(
     tracks = group_tracks_swift(df, by, exposure_ms, min_len, max_len)
     return tracks
 
-def group_tracks_swift(df:pd.DataFrame, by='seg.id', exposure_ms = 60, min_len=3, max_len=20):
-    tracks = []
-    try:
-        xyif = df[['x [nm]', 'y [nm]', by, 'frame']].sort_values(by)
-    except KeyError:
-        xyif = df[['x', 'y', by, 'frame']].sort_values(by)
+def group_tracks_swift(
+    df:pd.DataFrame, 
+    group_by='seg.id', 
+    additional_columns=[],
+    additional_units=[],
+    additional_scale=[],
+    exposure_ms = 60, 
+    min_len=3, 
+    max_len=50,
+    convert_nm_um=True
+    ):
+    '''
+    Extracts ['x [nm]', 'y [nm]', group_by, 'frame'] + additional_columns
+    from df.
+
+    Return:
+    -------
+    list of fastspt.simulate.Track objects
+    '''
+    assert len(additional_units) == len(additional_scale)
+    assert len(additional_units) == len(additional_columns)
     
+
+
+    tracks = []
+    columns = ['x [nm]', 'y [nm]', group_by, 'frame'] + additional_columns
+    out_columns = ['x', 'y', 'time', 'frame', group_by] + additional_columns
+    if convert_nm_um:
+        units = ['um', 'um', 'sec', int]
+    else:
+        units = ['nm', 'nm', 'sec', int]
+    
+    units = units + additional_units
+
+    try:
+        xyif = df[columns].sort_values(group_by)
+    except KeyError as e:
+        print(f'`KeyError`: unable to import all columns:', *e.args)
+        print(f'available columns: ', df.columns)
+        return []
+    
+    for c, s in zip(additional_columns, additional_scale):
+        xyif[c] *= s 
+
     print(len(xyif), 'localizations')
-    seg_ids = xyif[by]
+    seg_ids = xyif[group_by]
     _, ids = np.unique(seg_ids, return_index=True)
-    print(len(ids), "unique ", by)
-    time = xyif.frame.values
+    print(len(ids), "unique ", group_by)
+    frames = xyif.frame.values
     if exposure_ms:
-        time = time * exposure_ms * 1.e-3
+        time = frames * exposure_ms * 1.e-3
     
     xytf = xyif.values
+    sort_by_values = xytf[:, 2].copy()
     xytf[:, 2] = time
     xytf[:, :2] = xytf[:, :2] / 1000. # from nm to um
+
+    xytf = np.insert(xytf, 4, sort_by_values, axis=1)
+    assert len(xytf[0]) == len(out_columns), xytf.shape
             
-    for i, ii in tqdm(zip(ids[:-1], ids[1:]), disable=True):
+    for i, ii in tqdm(zip_longest(ids[:], ids[1:]), disable=True):
         track = xytf[i:ii]
         try:
             if len(track) >= min_len and len(track) <= max_len:
                 track_sorted_by_frame = track[np.argsort(track[:,3])]
-                tracks.append(track_sorted_by_frame)
+                tracks.append(
+                    Track(
+                        array=track_sorted_by_frame, 
+                        columns=out_columns, 
+                        units=units
+                    )
+                )
         except Exception as e:
             print(min_len)
             raise e
@@ -142,7 +191,7 @@ def group_tracks_swift(df:pd.DataFrame, by='seg.id', exposure_ms = 60, min_len=3
 
 def make_spoton_dataset_from_swift(data_path):
     tracks = pd.read_csv(data_path)
-    rep = group_tracks_swift(tracks, by='seg.id', min_len=5, max_len=30)
+    rep = group_tracks_swift(tracks, group_by='seg.id', min_len=5, max_len=30)
     return rep
 
 def show_pops(path):

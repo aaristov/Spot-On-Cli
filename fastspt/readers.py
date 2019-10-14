@@ -7,6 +7,7 @@ from fastspt import format4DN
 import scipy.io, os, json, xmltodict
 import numpy as np
 import pandas as pd
+from fastspt.simulate import Track
 
 
 def get_exposure_ms_from_path(path, pattern='bleach_(.*?)ms_'):
@@ -65,8 +66,9 @@ def read_trackmate_xml(path):
     traces = []
     
     try:
-        for particle in data['Tracks']['particle']:  
-            traces.append([(float(d['@x']), float(d['@y']), float(d['@t'])*framerate, float(d['@t'])) for d in particle['detection']])
+        for particle in data['Tracks']['particle']:
+            track = [(float(d['@x']), float(d['@y']), float(d['@t'])*framerate, int(d['@t'])) for d in particle['detection']]
+            traces.append(Track(array=np.array(track), columns=['x', 'y', 't', 'f'], units=['um', 'um', 'sec', int]))
     except KeyError as e:
         print(f'problem with {path}')
         raise e
