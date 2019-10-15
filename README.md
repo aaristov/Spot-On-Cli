@@ -7,6 +7,19 @@ This repository only includes the commandline analysis pipeline. A graphical use
 
 Although the functions and methods can be called directly, we provide a walk-through tutorial as a [Jupyter](http://jupyter.org) notebook. 
 
+
+# Docker
+
+Use docker to get preconfigured jupyter lab instance.
+
+### Build
+
+docker build --rm -f "Dockerfile" -t spot-on-cli:lab-scipy .
+
+### Run
+
+docker run --rm -it -v c:\Users\andre:/home/jovian/andrey -p 8888:8888/tcp spot-on-cli:lab-scipy
+
 # Dependencies
 
 - matplotlib
