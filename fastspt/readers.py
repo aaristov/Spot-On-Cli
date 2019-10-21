@@ -51,7 +51,7 @@ def read_trackmate_csv(fn, framerate):
             return da[da.TRACK_ID!=np.nan]
     return read_arbitrary_csv(fn, col_traj="TRACK_ID", col_x="POSITION_X", col_y="POSITION_Y", col_frame="FRAME", framerate=framerate/1000., cb=cb)
 
-def read_trackmate_xml(path):
+def read_trackmate_xml(path, min_len=3):
     """Converts xml to [x, y, time, frame] table"""
     data = xmltodict.parse(open(path, 'r').read(), encoding='utf-8')
     # Checks
@@ -68,7 +68,8 @@ def read_trackmate_xml(path):
     try:
         for particle in data['Tracks']['particle']:
             track = [(float(d['@x']), float(d['@y']), float(d['@t'])*framerate, int(d['@t'])) for d in particle['detection']]
-            traces.append(Track(array=np.array(track), columns=['x', 'y', 't', 'f'], units=['um', 'um', 'sec', int]))
+            if len(track) >=min_len:
+                traces.append(Track(array=np.array(track), columns=['x', 'y', 't', 'f'], units=['um', 'um', 'sec', '']))
     except KeyError as e:
         print(f'problem with {path}')
         raise e
