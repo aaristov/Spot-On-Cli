@@ -64,6 +64,7 @@ def parallel_fit(data_paths, fit_params, override=False):
         print(f"Problem with Pool {e}. Fall back to sequential fit")
         fits = list(map(process_xml_with_automatic_fps, data_paths[:]))
     
+    fits = pd.concat(fits)
     return fits
 
 
