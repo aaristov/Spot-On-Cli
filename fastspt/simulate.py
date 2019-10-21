@@ -4,7 +4,13 @@ from tqdm.auto import tqdm
 import pandas as pd
 
 class Track:
-
+    '''
+    Master class to storing tracks.
+    Raise:
+    ------
+    ValueError if column not found
+    '''
+    
     def __init__(
         self, 
         array:np.array, 
@@ -43,7 +49,7 @@ class Track:
                 ind = tuple(self.columns.index(it) for it in item)
                 return self.sub_columns(ind)
             else:
-                return []
+                raise ValueError(f'column `{item}` not found')
     
     def __getitem__(self, key):
         try:
@@ -63,20 +69,34 @@ class Track:
             
     
     def __repr__(self):
-        return repr(pd.DataFrame(columns=self.columns, data=self.array))
+        return repr(pd.DataFrame(columns=[f'{c} [{u}]' for c, u in zip(self.columns, self.units)], data=self.array))
     
     def add_column(self, title:str, values, units):
         assert len(values) == len(self.array)
         cols = self.columns.copy()
         cols.append(title)
 
-        units = self.units.copy()
-        units.append(units)
+        _units = self.units.copy()
+        _units.append(units)
 
         new_array = np.insert(self.array, self.array.shape[1], values, axis=1)
 
-        return Track(new_array, cols, units)
+        return Track(new_array, cols, _units)
 
+    def __add__(self, *another_track):
+        for track in another_track:
+            assert isinstance(track, Track), TypeError(f'type mismatch: {type(track)} != {type(self)}')
+
+            for c, s in zip(self.columns, track.columns):
+                assert c == s , f'columns mismatch: {c} != {s}'
+        cols = self.columns
+        units = self.units
+        vals = self.array
+        another_vals = [t.values  for t in another_track]
+        new_vals = np.concatenate((vals, *another_vals), axis=0)
+        return Track(new_vals, cols, units)
+
+    
 
 def track(
     track_id=0,
@@ -128,16 +148,22 @@ def track(
         dxy = np.random.standard_normal(size=(2,)) * D_
         
 #         dxytsb.loc[steps] = [xy[0], xy[1], steps * dt + start_time, sigma, int(bound)]
-        dxytsbi.append([dxy[0], dxy[1], steps * dt + start_time, 0, steps, int(not bound), track_id])
+        dxytsbi.append([dxy[0], dxy[1], steps * dt + start_time, steps, 0,  int(not bound), track_id])
         steps += 1
     
     out = np.array(dxytsbi)
     out[:, :2] = np.cumsum(out[:, :2], axis=0)
     sigma = .001 * np.random.standard_gamma(loc_error * 1000., size=(len(out), 2))
     out[:, :2] = out[:, :2] + sigma * np.random.standard_normal(size=(len(out), 2))
-    out[:, 3] = sigma.mean(axis=1)
-  
-    return Track(out, columns=['x', 'y', 't', 'sigma', 'frame', 'free', 'id'])
+    out[:, 4] = sigma.mean(axis=1)
+    
+    track = Track(
+        out, 
+        columns=['x', 'y', 't',  'frame', 'sigma','free', 'id'],
+        units=['um', 'um', 'sec', '', 'um', '', '']
+    )
+
+    return track
 
 def tracks(
     num_tracks = 1e3,
