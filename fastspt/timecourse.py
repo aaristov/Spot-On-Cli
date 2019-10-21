@@ -73,7 +73,7 @@ def process_xml_with_automatic_fps(path, fit_params=fit_params, override=False):
     
     if os.path.exists(path + ".fit.json") and not override:
         stats = pd.read_json(path + ".fit.json")
-        print('Found previous fit, recovering stats')
+        print(f'Found previous fit {path}.fit.json, recovering stats')
         return stats
 
     exp = get_exposure_ms_from_path(path)
@@ -100,7 +100,7 @@ def process_xml_with_automatic_fps(path, fit_params=fit_params, override=False):
     
     stats = get_stats(fit_result, names=[path])
     stats.to_json(path + ".fit.json")
-    print('Saving fit_result')
+    print(f'Saving fit_result to {path}.fit.json')
 
     return  stats
 
