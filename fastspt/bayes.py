@@ -90,10 +90,17 @@ sum_list = lambda l: reduce(lambda a, b: a + b, l)
 
 
 
-def get_switching_rates(xytfu:sim.Track, fps:float, lag:int=1, column='free'):
+def get_switching_rates(xytfu:list, fps:float, lag:int=1, column='free'):
     '''
-    if lag is more than 1, halpf of this length will be cut off the ends of the track to avoid artefacts
-
+    Parameters:
+    -----------
+    xytfu: list of simulate.Track objects
+    fps: float
+        Framerate
+    lag: int
+        if lag is more than 1, halpf of this length will be cut off the ends of the track to avoid artefacts
+    column: str
+        where to look for the label
     Return:
     -------
     stats: dict
