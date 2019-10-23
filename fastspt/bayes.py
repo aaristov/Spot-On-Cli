@@ -26,13 +26,18 @@ def cdf_bound(sigma, r):
 def cdf_unbound(sigma, r):
     return 1 - cdf_bound(sigma, r)
 
-def get_jd(xy:np.ndarray, lag=1, extrapolate=False):
+def get_jd(track:sim.Track, lag=1, extrapolate=False, filter_frame_intevals=False):
 #     xy = [[x1, y1]
 #           [x2, y2]
-#             ...   ]   
-
+#             ...   ]  
+# TODO: send frame jumps to higher lags 
+    xy = track.xy
+    frames = track.frame.flat
     if len(xy) > lag:
         dxy = xy[lag:] - xy[:-lag] 
+        d_frames = frames[lag:] - frames[:-lag]
+        if filter_frame_intevals:
+            dxy = dxy[d_frames == lag]
         jd = np.sqrt((dxy ** 2).sum(axis=1))
         if extrapolate:
             while len(jd) < len(xy):
