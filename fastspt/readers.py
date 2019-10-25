@@ -66,10 +66,10 @@ def read_trackmate_xml(path, min_len=3):
     traces = []
     
     try:
-        for particle in data['Tracks']['particle']:
-            track = [(float(d['@x']), float(d['@y']), float(d['@t'])*framerate, int(d['@t'])) for d in particle['detection']]
+        for i, particle in enumerate(data['Tracks']['particle']):
+            track = [(float(d['@x']), float(d['@y']), float(d['@t'])*framerate, int(d['@t']), i) for d in particle['detection']]
             if len(track) >=min_len:
-                traces.append(Track(array=np.array(track), columns=['x', 'y', 't', 'f'], units=['um', 'um', 'sec', '']))
+                traces.append(Track(array=np.array(track), columns=['x', 'y', 't', 'frame', 'track.id'], units=['um', 'um', 'sec', '', '']))
     except KeyError as e:
         print(f'problem with {path}')
         raise e
@@ -84,7 +84,11 @@ def read_anders(fn, new_format=True):
     """The file format sent by Anders. I don't really know where it 
     comes from.
     new_format tells whether we should perform weird column manipulations
-    to get it working again..."""
+    to get it working again...
+
+        traces_header = ('x','y','t','f')
+
+    """
     
     def _new_format(cel):
         """Converts between the old and the new Matlab format. To do so, it 
@@ -110,7 +114,6 @@ def read_anders(fn, new_format=True):
         m[0] = _new_format(m[0])
     
     ## Make the conversion
-    traces_header = ('x','y','t','f')
     traces = []
     for tr in m[0]:
         x = [float(i) for i in tr[0][:,0]]
@@ -134,7 +137,7 @@ def to_fastSPT(f, from_json=False):
 
     ## Create the object
     dt = np.dtype([('xy', 'O'), ('TimeStamp', 'O'), ('Frame', 'O')]) # dtype
-    DT = np.dtype('<f8', '<f8', 'uint16')
+    # DT = np.dtype('<f8', '<f8', 'uint16')
     trackedPar = []
     for i in da:
         xy = []
@@ -195,7 +198,7 @@ def read_arbitrary_csv(fn, col_x="", col_y="", col_frame="", col_t="t",
 
 def pandas_to_fastSPT(da, col_traj, col_x, col_y, col_t, col_frame):
     out = []
-    for (idx, t) in da.sort_values(col_traj).groupby(col_traj):
+    for (_, t) in da.sort_values(col_traj).groupby(col_traj):
         tr = [(tt[1][col_x], tt[1][col_y], tt[1][col_t], int(tt[1][col_frame]))
               for tt in t.sort_values(col_frame).iterrows()]  # Order by trace, then by frame
         out.append(tr)
