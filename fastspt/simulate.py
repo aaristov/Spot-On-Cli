@@ -176,7 +176,8 @@ def tracks(
     p_out_of_focus=1e-1, 
     min_len=5,
     fun=track,
-    use_tqdm=True
+    use_tqdm=True,
+    **kwargs
 ):
     print(f'Simulating {num_tracks} tracks')
     tracks = list(
@@ -193,7 +194,7 @@ def tracks(
                 p_out_of_focus=p_out_of_focus,
                 min_len=min_len
                 ),
-            tqdm(range(num_tracks), disable=not use_tqdm)
+            tqdm(range(int(num_tracks)), disable=not use_tqdm)
             )
         )
     
