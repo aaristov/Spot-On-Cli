@@ -26,19 +26,40 @@ def cdf_bound(sigma, r):
 def cdf_unbound(sigma, r):
     return 1 - cdf_bound(sigma, r)
 
-def get_jd(track:sim.Track, lag=1, extrapolate=False, filter_frame_intevals=False):
-#     xy = [[x1, y1]
-#           [x2, y2]
-#             ...   ]  
+def get_jd(xy:np.array, lag=1, extrapolate=False, filter_frame_intevals=None):
+
 # TODO: send frame jumps to higher lags 
-    xy = track.xy
-    frames = track.frame.flat
+
+    """    
+    Computes jumping distances out of xy coordinates array.
+    Parameters:
+    -----------
+    xy = [[x1, y1]
+        [x2, y2]
+            ---  ] 
+    
+    lag: int
+        jump interval in frames, default 1
+
+    extrapolate: bool
+        If True, returns the same size by filling edges with the same values. Default False.
+
+    filter_frame_intevals: list
+        if not None, will use only frame intervals equal to lag, default None
+
+    """ 
+
     if len(xy) > lag:
+        
         dxy = xy[lag:] - xy[:-lag] 
-        d_frames = frames[lag:] - frames[:-lag]
+
         if filter_frame_intevals:
+            frames = filter_frame_intevals
+            d_frames = frames[lag:] - frames[:-lag]
             dxy = dxy[d_frames == lag]
+
         jd = np.sqrt((dxy ** 2).sum(axis=1))
+
         if extrapolate:
             while len(jd) < len(xy):
                 jd = np.concatenate(([jd[0]], jd[:]))
@@ -83,7 +104,7 @@ def classify_bound_segments(track:sim.Track, sigma:float, max_lag:int=4, col_nam
         raise e
     
 #     new_track = np.insert(track, track.shape[1], bound_vector, axis=1)
-    new_track = track.add_column(col_name, bound_vector, int)
+    new_track = track.add_column(col_name, bound_vector, 'free: 1, bound: 0')
 
     if return_p_unbinds:
         return new_track, p_unbinds
