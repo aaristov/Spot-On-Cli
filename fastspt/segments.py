@@ -3,6 +3,39 @@ import numpy as np
 from functools import reduce
 from tqdm.auto import tqdm
 
+
+# tools to break tracks into segments 
+# based on predefined column with states
+
+
+def get_populations(tracks, column_with_states='free', values=(0, 1), min_len=3):
+    '''
+    Breaks tracks into segments based on predefined column with states
+
+    Parameters:
+    -----------
+    tracks: list of simulate.Track objects
+        list of tracks to be analyzed
+    column_with_states: string, default `free`
+        title of the column containing state information
+    values: tuple of any type, default (0, 1)
+        Whatever values you expect in the `column_with_states`
+    min_len: int, default 3
+        Minimal length of output segments. All segments shorter than this number will be regected.
+
+    Return:
+    -------
+    tuple of lists of segments with the good states.
+
+    '''
+    ttt = add_seg_id_to_tracks(tracks)
+    segments = reduce(lambda a,b: a+b, map(break_into_segments, ttt))
+    segments_longer = list(filter(lambda t: len(t) > min_len, segments))
+    pops = (list(filter(lambda t: t.free.mean() == v, segments_longer)) for v in values)
+    
+    return pops
+
+
 def assign_seg_id(states, id0=1):
     n = id0
     ids = [n,]
@@ -12,9 +45,6 @@ def assign_seg_id(states, id0=1):
             n = n + 1
         ids.append(n)
     return ids
-
-# %timeit ids = assign_seg_id(l, 10)
-# print (ids)
 
 def add_seg_id_to_track(track:simulate.Track, column_with_states='free', start_id=0, new_column='seg_id', return_new_id=False):
 
@@ -44,11 +74,3 @@ def break_into_segments(track, column_with_seg_id='seg_id'):
     for i1, i2 in zip(indices[:-1], indices[1:]):
         out.append(track.crop_frames(i1,i2))
     return out
-
-def get_populations(tracks, column_with_states='free', values=(0, 1), min_len=3):
-    ttt = add_seg_id_to_tracks(tracks)
-    segments = reduce(lambda a,b: a+b, map(break_into_segments, ttt))
-    segments_longer = list(filter(lambda t: len(t) > min_len, segments))
-    pops = (list(filter(lambda t: t.free.mean() == v, segments_longer)) for v in values)
-    
-    return pops
