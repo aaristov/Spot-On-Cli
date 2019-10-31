@@ -53,8 +53,8 @@ def get_jd(xy:np.array, lag=1, extrapolate=False, filter_frame_intevals=None):
         
         dxy = xy[lag:] - xy[:-lag] 
 
-        if filter_frame_intevals:
-            frames = filter_frame_intevals
+        if filter_frame_intevals is not None:
+            frames = np.ravel(filter_frame_intevals)
             d_frames = frames[lag:] - frames[:-lag]
             dxy = dxy[d_frames == lag]
 
