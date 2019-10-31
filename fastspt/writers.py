@@ -9,16 +9,6 @@
 import scipy.io, pandas
 
 ## ==== Functions
-def write_trackmate(da):
-    """Experimental (not to say deprecated)"""
-    #tree = ElementTree.Element('tmx', {'version': '1.4a'})
-    Tracks = ElementTree.Element('Tracks', {'lol': 'oui'})
-    ElementTree.SubElement(Tracks,'header',{'adminlang': 'EN',})
-    ElementTree.SubElement(Tracks,'body')
-
-    with open('/home/**/Bureau/myfile.xml', 'w') as f:
-        f.write('<?xml version="1.0" encoding="UTF-8" ?>')
-        ElementTree.ElementTree(Tracks).write(f, 'utf-8')
 
 
 def mat_to_csv(inF, outF):
