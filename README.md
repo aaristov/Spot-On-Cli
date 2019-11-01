@@ -22,15 +22,11 @@ docker run --rm -it -v c:\Users\andre:/home/jovian/andrey -p 8888:8888/tcp spot-
 
 # Dependencies
 
-- matplotlib
-- numpy
-- scipy
-- lmfit
-- xmltodict
+See requirements.txt
 
-Optional: jupyter
+# Running tests
 
-Your package manager may provide precompiled versions of `matplotlib`, `numpy` and `scipy`. In that case, it might be worth using those libraries, because compilation can take a significant amount of time.
+pytest --cov fastspt --cov-report xml:cov.xml
 
 # Installation (from pip)
 

@@ -7,3 +7,6 @@ xlwt
 tqdm
 mat4py
 trackpy
+pytest
+coverage
+pytest-cov
