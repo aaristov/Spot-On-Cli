@@ -32,18 +32,17 @@ fit_params = dict(
     verbose=False
 )
 
+tracks = simulate.tracks(**sim_params)
+
+fit = fit2.fit_spoton_2_0(tracks, **fit_params)
 
 class TestFit:
 
     
     def test_sim_tracks(self):
-        tracks = simulate.tracks(**sim_params)
         assert len(tracks) == sim_params['num_tracks']
 
     def test_fit_tracks(self):
-        sim_params['num_tracks'] = 1e4
-        tracks = simulate.tracks(**sim_params)
-        fit = fit2.fit_spoton_2_0(tracks, **fit_params)
 
         np.testing.assert_almost_equal(
             fit['D_free'], sim_params['D_free'], 
@@ -54,8 +53,15 @@ class TestFit:
 
         np.testing.assert_almost_equal(
             fit['F_bound'], sim_params['F_bound'],         
-            decimal=2, 
+            decimal=1, 
             err_msg=f"Fitted F_bound {fit['F_bound']:.2f}, simulated {sim_params['F_bound']:.2f}"
         )
+
+    def test_fit_jd_hist_bad_input(self):
+        with pytest.raises(TypeError):
+            fit2.fit_jd_hist(None, 0, [0,0], [1,1], [0,1], [1,1], 0, 1, 0)
+
+        with pytest.raises(AttributeError):
+            fit2.fit_jd_hist([None], 0, [0,0], [1,1], [0,1], [1,1], 0, 1, 0)
 
         
