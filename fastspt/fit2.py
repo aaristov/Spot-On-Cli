@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from fastspt import bayes
 from tqdm.auto import tqdm
+import logging
+logger = logging.getLogger(__name__)
 
 
 class JumpLengthHistogram:
@@ -19,7 +21,10 @@ class JumpLengthHistogram:
         assert len(self.vector) == len(self.hist)
     
     def __repr__(self):
-        return f"""JumpLengthHistogram: \n\tlag: {self.lag} \n\tvector: {self.vector} \n\tvalues: {self.hist}"""
+        return f"""JumpLengthHistogram: \
+            \n\tlag: {self.lag} \
+            \n\tvector: {self.vector} \
+            \n\tvalues: {self.hist}"""
     
     def __len__(self):
         return len(self.vector)
@@ -75,8 +80,16 @@ def fit_spoton_2_0(
 
     if plot:
         print(D_all, F_all)
-        _ = [get_error_histogram_vs_model(h, dt, sigma, D_all, F_all, plot=True, use_cdf=False) for h in hists]
-        # _ = [get_error_histogram_vs_model(h, dt, sigma, (0,D_free), (F_bound, 1-F_bound), plot=True, use_cdf=True) for h in hists]
+        _ = [get_error_histogram_vs_model(
+            h, 
+            dt, 
+            sigma, 
+            D_all, 
+            F_all, 
+            plot=True, 
+            use_cdf=False
+        ) for h in hists]
+
     return {
         'sigma': sigma, 
         'D_free': D_free, 
@@ -118,6 +131,7 @@ def fit_jd_hist(
     Returns:
     popt (lmfit.minimizerResult): optimized parameters
     '''
+
     from lmfit import Parameters, Parameter, fit_report, minimize
             
     def residual(fit_params, data):
@@ -128,7 +142,11 @@ def fit_jd_hist(
     
     fit_params.add('sigma', value=sigma, vary=fit_sigma, min=0.)
     fit_params.add('dt', value=dt, vary=False)
-    fit_params.add('max_lag', value=max([h.lag for h in hists]), vary=False)
+    try:
+        fit_params.add('max_lag', value=max([h.lag for h in hists]), vary=False)
+    except TypeError as e:
+        logger.error(f'problem with `hists`: expected `list`, got `{type(hists)}`')
+        raise e
     
     for i, (d, f_d, f, f_f) in enumerate(zip(D, fit_D, F, fit_F)):
         fit_params.add(f'D{i+1}', value=d, vary=f_d, min=0.)
@@ -140,21 +158,13 @@ def fit_jd_hist(
 
     fit_params[f'F{len(F)}'] = Parameter(name=f'F{i+1}', min=0., max=1., expr=f_expr) 
     
+    logger.debug('start minimize')
     
+    minimizer_result  = minimize(residual, fit_params, args=(hists, ))#, **solverparams)
+
     if verbose:
-        print('start minimize')
-    try:
-        # print(fit_params)
-
-        minimizer_result  = minimize(residual, fit_params, args=(hists, ))#, **solverparams)
-
-        if verbose:
-            print(f'completed in {minimizer_result.nfev} steps')
-            minimizer_result.params.pretty_print()
-
-    except ValueError as e:
-        fit_params.pretty_print()
-        raise e
+        logger.info(f'completed in {minimizer_result.nfev} steps')
+        minimizer_result.params.pretty_print()
 
     return minimizer_result
        
@@ -166,12 +176,23 @@ def get_jds_histograms(tracks, max_lag, max_um=0.6, bins=100, disable_tqdm=False
     '''
     def single_hist(i):
         lag = i + 1
-        _jds = [bayes.get_jd(t.xy, lag, filter_frame_intevals=t.frame) for t in tracks]
+        _jds = [
+            bayes.get_jd(t.xy, lag, filter_frame_intevals=t.frame) for t in tracks
+        ]
         jds = np.concatenate(_jds, axis=0)
         h, edges = np.histogram(jds, bins=bins, range=(0, max_um), density=True)
         return JumpLengthHistogram(h, edges, lag)
         
-    hists = list(map(single_hist, tqdm(range(max_lag), desc=f'jds hists for {max_lag} lags', disable=disable_tqdm)))
+    hists = list(
+        map(
+            single_hist, 
+            tqdm(
+                range(max_lag), 
+                desc=f'jds hists for {max_lag} lags', 
+                disable=disable_tqdm
+            )
+        )
+    )
     
     return hists
 
@@ -184,8 +205,9 @@ def get_error_histogram_vs_model(
     use_cdf=False,
     p_density=bayes.p_jd, 
     plot=False
-):
+) -> np.ndarray:
     assert len(D) == len(F)
+    assert isinstance(hist, JumpLengthHistogram)
     vector = hist.vector
     values = hist.hist
     lag = hist.lag
@@ -201,7 +223,7 @@ def get_error_histogram_vs_model(
     
     if plot:
         plt.figure(figsize=(10, 1))
-        print(D, F)
+        logger.info(f'Plot fit for (D, F): {(D, F)}')
         for i, (_D, _F) in enumerate(zip(D, F)):
             plt.plot(
                 vector, 
@@ -210,14 +232,24 @@ def get_error_histogram_vs_model(
                 label=f'D{i}: {_D:.3f} ({_F:.0%})'
             )
         plt.plot(vector, model, 'r-', label='sum model')
-        plt.bar(vector, values, width=np.diff(vector)[0], label=f'jd {lag} lag', fill=None)
+        plt.bar(
+            vector, 
+            values, 
+            width=np.diff(vector)[0], 
+            label=f'jd {lag} lag', 
+            fill=None
+        )
         plt.title(f'sigma: {sigma:0.3f}')
         plt.legend()
         plt.show()
         
     return model - values
 
-def cumulative_error_jd_hist(fit_params:lmfit.Parameters, hist_list, num_states):
+def cumulative_error_jd_hist(
+    fit_params:lmfit.Parameters, 
+    hist_list:list, 
+    num_states:int
+    ) -> np.ndarray:
     
     p = fit_params.valuesdict()
 #     print(p)
