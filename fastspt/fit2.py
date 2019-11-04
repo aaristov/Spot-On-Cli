@@ -239,8 +239,16 @@ def get_error_histogram_vs_model(
             label=f'jd {lag} lag', 
             fill=None
         )
+        plt.bar(
+            vector, 
+            model - values, 
+            width=np.diff(vector)[0], 
+            label=f'error', 
+            fill='red'
+        )
+        
         plt.title(f'sigma: {sigma:0.3f}')
-        plt.legend()
+        plt.legend(loc=(1, 0))
         plt.show()
         
     return model - values

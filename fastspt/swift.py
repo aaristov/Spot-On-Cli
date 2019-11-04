@@ -138,9 +138,9 @@ def group_tracks_swift(
     columns = ['x [nm]', 'y [nm]', group_by, 'frame'] + additional_columns
     out_columns = ['x', 'y', 'time', 'frame', group_by] + additional_columns
     if convert_nm_um:
-        units = ['um', 'um', 'sec', int]
+        units = ['um', 'um', 'sec', '']
     else:
-        units = ['nm', 'nm', 'sec', int]
+        units = ['nm', 'nm', 'sec', '']
     
     units = units + additional_units
 
@@ -206,7 +206,14 @@ def show_pops(path):
     plt.show()
     return n_segs
 
-def plot_mjd_hist(tracks, use_column='seg.mjd', weight_by_column='seg.mjd_n', bins=30, range=(0,250), label=''):
+def plot_mjd_hist(
+    tracks, 
+    use_column='seg.mjd', 
+    weight_by_column='seg.mjd_n', 
+    bins=30, 
+    range=(0,250), 
+    label=''
+):
     h, _, _ = plt.hist(
         tracks[use_column], 
         weights=tracks[weight_by_column], 
@@ -225,7 +232,12 @@ def plot_mjd_hist(tracks, use_column='seg.mjd', weight_by_column='seg.mjd_n', bi
 def count_unique_segments(sub_tracks):
     return len(np.unique(sub_tracks["seg.id"]))
 
-def select_populations(tracks, from_column='seg.dynamics', keywords=['static', 'free'], equalize_min_len_by='seg.loc_count'):
+def select_populations(
+    tracks, 
+    from_column='seg.dynamics', 
+    keywords=['static', 'free'], 
+    equalize_min_len_by='seg.loc_count'
+):
     '''
     Selects localizations with keywords dynamics and returns a dictionary
     '''
@@ -234,7 +246,9 @@ def select_populations(tracks, from_column='seg.dynamics', keywords=['static', '
     for k in keywords:
         sub_tracks = tracks[tracks[from_column] == k ]
         n_tracks = len(sub_tracks)
-        print(f'{k} : {n_tracks} localizations, {count_unique_segments(sub_tracks)} unique tracks')
+        print(f'{k} : {n_tracks} localizations, \
+{count_unique_segments(sub_tracks)} unique tracks')
+
         min_len = max(min_len, min(sub_tracks[equalize_min_len_by]))
         out[k] = sub_tracks
     
