@@ -1,8 +1,0 @@
-[
-  "fastspt/tests/test_fit2.py::TestFit::test_sim_tracks",
-  "fastspt/tests/test_fit2.py::TestFit::test_fit_tracks",
-  "fastspt/tests/test_fit2.py::TestFit::test_fit_jd_hist_bad_input",
-  "fastspt/tests/test_swift.py::TestSwiftImport::test_data_integrity",
-  "fastspt/tests/test_swift.py::TestSwiftImport::test_import",
-  "fastspt/tests/test_swift.py::TestSwiftImport::test_import_with_sigma"
-]
