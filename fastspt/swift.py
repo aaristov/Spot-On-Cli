@@ -30,6 +30,9 @@ class StroboscopicDataset:
              \r\tPATHS: {len(self.paths)} items,\
              \r\tDecay rate : {self.decay_rate:.2f}'''
 
+def read_csv_to_df(path):
+    return pd.read_csv(path)
+
 def get_bleaching_unbinding_rate_from_datasets(*datasets:StroboscopicDataset, plot=True):
     '''
     Computes bleachung rate and unbinding rate for 2 or more datasets.
@@ -95,7 +98,7 @@ def find_overlap(*linear_funcs):
 
 def open_and_group_tracks_swift(
     path, 
-    by='seg.id', 
+    by='seg.id',
     exposure_ms=60,
     min_len=3, 
     max_len=np.inf
@@ -106,8 +109,13 @@ def open_and_group_tracks_swift(
     Returns list with tracks in xytf format
     """
     print('Processing ', path)
-    df = pd.read_csv(path)
-    tracks = group_tracks_swift(df, by, exposure_ms, min_len, max_len)
+    df = read_csv_to_df(path)
+    tracks = group_tracks_swift(
+        df, 
+        by, 
+        exposure_ms, 
+        min_len, 
+        max_len, )
     return tracks
 
 def group_tracks_swift(
@@ -138,9 +146,9 @@ def group_tracks_swift(
     columns = ['x [nm]', 'y [nm]', group_by, 'frame'] + additional_columns
     out_columns = ['x', 'y', 'time', 'frame', group_by] + additional_columns
     if convert_nm_um:
-        units = ['um', 'um', 'sec', '']
+        units = ['um', 'um', 'sec', '', '']
     else:
-        units = ['nm', 'nm', 'sec', '']
+        units = ['nm', 'nm', 'sec', '', '']
     
     units = units + additional_units
 
