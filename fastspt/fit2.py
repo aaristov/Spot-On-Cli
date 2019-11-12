@@ -98,7 +98,6 @@ def fit_spoton_2_0(
 
     return {
         'sigma': sigma, 
-        'confined_sigma': confined_sigma,
         'D_all': D_all,
         'F_all': F_all,
         'n_tracks': n_tracks, 
@@ -165,14 +164,15 @@ def fit_jd_hist(
     fit_params[f'F{i+1}'] = Parameter(name=f'F{i+1}', min=0., max=1., expr=f_expr) 
     
 
-    for i, (s, f_s, min_s) in enumerate(
+    for i, (s, f_s, min_s, max_s) in enumerate(
         zip(
             (sigma, confined_sigma), 
             (fit_sigma, fit_confined_sigma),
-            (0, sigma)
+            (0, sigma),
+            (3*sigma, D[-1])
         )
     ):
-        fit_params.add(f'sigma{i}', value=s, min=min_s, vary=f_s)
+        fit_params.add(f'sigma{i}', value=s, min=min_s, max=max_s, vary=f_s)
         
     
     fit_params.pretty_print()
@@ -261,7 +261,7 @@ def get_error_histogram_vs_model(
                 vector, 
                 p_density(dt * lag, s, _D)(vector) * _F, 
                 alpha=0.5, 
-                label=f'{name}{i}: {_D:.3f}, σ: {s:.3f}, fraction {_F:.0%}'
+                label=f'{name}$_{i}$: {_D:.2f}, σ: {s:.3f}, fraction {_F:.0%}'
             )
         plt.plot(vector, model, 'r-', label='sum model')
         plt.bar(
