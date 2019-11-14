@@ -1,7 +1,8 @@
-from fastspt import simulate
+from fastspt import simulate, core
 import numpy as np
 from functools import reduce
 from tqdm.auto import tqdm
+from copy import deepcopy
 
 
 # tools to break tracks into segments 
@@ -28,10 +29,10 @@ def get_populations(tracks, column_with_states='free', values=(0, 1), min_len=3)
     tuple of lists of segments with the good states.
 
     '''
-    ttt = add_seg_id_to_tracks(tracks)
+    ttt = add_seg_id_to_tracks(tracks, column_with_states)
     segments = reduce(lambda a,b: a+b, map(break_into_segments, ttt))
     segments_longer = list(filter(lambda t: len(t) > min_len, segments))
-    pops = (list(filter(lambda t: t.free.mean() == v, segments_longer)) for v in values)
+    pops = list(list(filter(lambda t: t.col(column_with_states).mean() == v, segments_longer)) for v in values)
     
     return pops
 
@@ -46,15 +47,19 @@ def assign_seg_id(states, id0=1):
         ids.append(n)
     return ids
 
-def add_seg_id_to_track(track:simulate.Track, column_with_states='free', start_id=0, new_column='seg_id', return_new_id=False):
+def add_seg_id_to_track(
+    track:core.Track, 
+    column_with_states='free', 
+    start_id=0, 
+    new_column='seg_id', 
+    return_new_id=False) -> core.Track:
 
     states = track.col(column_with_states)
     ids = assign_seg_id(states, start_id)
     new_track = track.add_column(new_column, ids, '')
     if return_new_id:
         return new_track, max(ids)
-    else:
-        return new_track
+    return new_track
 
 def add_seg_id_to_tracks(tracks:list, column_with_states='free', new_column='seg_id'):
     cur_id = 0
