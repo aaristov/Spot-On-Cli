@@ -39,12 +39,10 @@ def fit_spoton_2_0(
     dt=0.06,
     D=(0, 0.1), 
     fit_D=(False, True), 
-    F=(0.3, 0.3, 0.4), 
+    F=(0.3, 0.7), 
     fit_F=(True, True),
-    sigma=0.02, 
-    fit_sigma=True,
-    confined_sigma=0.1,
-    fit_confined_sigma=True,
+    sigma=(0.02,), 
+    fit_sigma=(True,),
     n_bins=50,
     max_um=0.6,
     verbose=False,
@@ -66,8 +64,6 @@ def fit_spoton_2_0(
         fit_F=fit_F,
         sigma=sigma, 
         fit_sigma=fit_sigma,
-        confined_sigma=confined_sigma,
-        fit_confined_sigma=fit_confined_sigma,
         verbose=verbose
     )
 
@@ -75,7 +71,7 @@ def fit_spoton_2_0(
     dt = values['dt']
     # sigma = values['sigma0']
     # confined_sigma = values['sigma1']
-    sigma = [values[f'sigma{i}'] for i in range(2)]
+    sigma = [values[f'sigma{i}'] for i in range(len(sigma))]
     D_all = [values[f'D{i}'] for i in range(len(D))]
     F_all = [values[f'F{i}'] for i in range(len(F))]
     order = np.argsort(D_all)
@@ -98,8 +94,10 @@ def fit_spoton_2_0(
 
     return {
         'sigma': sigma, 
-        'D_all': D_all,
-        'F_all': F_all,
+        'D': D_all,
+        'F': F_all,
+        'dt': dt,
+        'fit_result': fit_result,
         'n_tracks': n_tracks, 
         'chi2': fit_result.chisqr, 
         'chi2_norm': fit_result.chisqr / n_bins / n_lags,
@@ -117,8 +115,6 @@ def fit_jd_hist(
     fit_F:list,
     sigma:float, 
     fit_sigma:bool,
-    confined_sigma:float, 
-    fit_confined_sigma:bool,
     verbose=False, 
     
 ):
@@ -166,16 +162,16 @@ def fit_jd_hist(
 
     for i, (s, f_s, min_s, max_s) in enumerate(
         zip(
-            (sigma, confined_sigma), 
-            (fit_sigma, fit_confined_sigma),
-            (0, sigma),
-            (3*sigma, D[-1])
+            sigma, 
+            fit_sigma,
+            (0, sigma[0]),
+            (3*sigma[0], D[-1])
         )
     ):
         fit_params.add(f'sigma{i}', value=s, min=min_s, max=max_s, vary=f_s)
         
     
-    fit_params.pretty_print()
+    # fit_params.pretty_print()
     logger.debug('start minimize')
     
     minimizer_result  = minimize(residual, fit_params, args=(hists, ))#, **solverparams)
@@ -294,11 +290,19 @@ def cumulative_error_jd_hist(
     
     p = fit_params.valuesdict()
     # print(p)
+    
+    sigma = []
+    try:
+        for i in range(2):
+            sigma.append(p[f'sigma{i}'])
+    except:
+        pass
+
     cum = [
         get_error_histogram_vs_model(
             h, 
             dt=p["dt"], 
-            sigma=list(p[f'sigma{i}'] for i in range(2)),
+            sigma=sigma,
             D=list(p[f'D{i}'] for i in range(num_states)), 
             F=list(p[f'F{i}'] for i in range(num_states)),
             plot=False
