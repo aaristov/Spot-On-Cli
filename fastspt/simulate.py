@@ -2,6 +2,8 @@ import numpy as np
 from functools import partial
 from tqdm.auto import tqdm
 import pandas as pd
+import logging
+logger = logging.getLogger(__name__)
 
 class Track:
     '''
@@ -49,11 +51,11 @@ class Track:
                 ind = tuple(self.columns.index(it) for it in item)
                 return self.sub_columns(ind)
             else:
-                raise ValueError(f'column `{item}` not found')
+                raise ValueError(f'column `{item}` not found, available columns: `{self.columns}`')
     
     def __getitem__(self, key):
         try:
-            return self.array[key]
+            return self.array[tuple(key)]
         except IndexError:
             return self.array[np.ravel(key)]
     
@@ -63,7 +65,7 @@ class Track:
             arr[key] = value
             return Track(arr, self.columns, self.units)
         except Exception as e:
-            print('unable to set the new values: ', *e.args)
+            logger.warning('unable to set the new values: ', *e.args)
             return self
             
             
@@ -101,7 +103,8 @@ class Track:
 def track(
     track_id=0,
     start_time=0,
-    dt = 0.06, 
+    dt = 0.06,
+    D_bound=0, 
     D_free=0.06,
     loc_error=0.02, 
     p_binding=1e-4, 
@@ -130,24 +133,19 @@ def track(
     
     while not stop:
         
-#         sigma = np.random.normal(*loc_error)
-            
         if bound:
             stop = np.random.random() < p_bleaching and steps >= min_len
-            D_ = 0
+            D_ = D_bound
             switch = np.random.random() < p_unbinding
         else:
             stop = np.random.rand(1)[0] < p_bleaching + p_out_of_focus and steps >= min_len
-#             D_free_ = np.random.normal(*D_free)
             D_ = np.sqrt( 2 * D_free  * dt)
             switch = np.random.random() < p_binding
         
         if switch:
             bound = not bound
-#             print(['u', 'b'][int(bound)], end='')
         dxy = np.random.standard_normal(size=(2,)) * D_
         
-#         dxytsb.loc[steps] = [xy[0], xy[1], steps * dt + start_time, sigma, int(bound)]
         dxytsbi.append([dxy[0], dxy[1], steps * dt + start_time, steps, 0,  int(not bound), track_id])
         steps += 1
     
@@ -167,25 +165,27 @@ def track(
 
 def tracks(
     num_tracks = 1e3,
-    dt = 0.06, 
+    dt = 0.06,
+    D_bound=0, 
     D_free=0.06,
     loc_error=0.02, 
     p_binding=1e-4, 
     p_unbinding=1e-3, 
     p_bleaching=1e-1, 
-    p_out_of_focus=1e-1, 
+    p_out_of_focus=1e-5, 
     min_len=5,
     fun=track,
     use_tqdm=True,
     **kwargs
 ):
-    print(f'Simulating {num_tracks} tracks')
+    logger.info(f'Simulating {num_tracks} tracks')
     tracks = list(
         map(
             lambda id: fun(
                 track_id=id,
                 start_time=id, 
                 dt=dt, 
+                D_bound=D_bound,
                 D_free=D_free, 
                 loc_error=loc_error, 
                 p_binding=p_binding, 
