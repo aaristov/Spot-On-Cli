@@ -1,8 +1,8 @@
-from fastspt import simulate, plot
+from fastspt import simulate, plot, core
 import numpy as np
 
 def test_select_states():
-    track = simulate.Track(np.random.rand(10, 2), columns=['x', 'y'], units=['um', 'um'])
+    track = core.Track(np.random.rand(10, 2), columns=['x', 'y'], units=['um', 'um'])
 
     track = track.add_column('s0', np.zeros(10), units='')
 

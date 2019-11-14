@@ -1,5 +1,5 @@
 import numpy as np
-from fastspt import swift, simulate
+from fastspt import swift, simulate, core
 from scipy.ndimage import gaussian_filter1d as gf1
 from functools import reduce
 from itertools import zip_longest
@@ -113,14 +113,14 @@ class BayesFilter:
     
     __len__ = n_states
     
-    def predict_states(self, track: simulate.Track, max_lag=4, smooth:float=0):
+    def predict_states(self, track: core.Track, max_lag=4, smooth:float=0):
         '''
         Bayesian filter for segments of the track. Depending on jumping 
         distances for lag = 1..max_lag, assigns state index to each localization.
 
         Parameters:
         -----------
-        track: simulate.Track
+        track: core.Track
             track to analyze
         max_lag: int
             how many jumps to consider for every time point
@@ -142,7 +142,7 @@ class BayesFilter:
         jds = list(filter(len, jds0))
         
         if len(jds) < len(jds0):
-            print(f'WARNING: track of length {len(track)} is too short  for {max_lag} lags, using {len(jds)} lags instead')
+            logger.warning(f'WARNING: track of length {len(track)} is too short  for {max_lag} lags, using {len(jds)} lags instead')
 
         try:
             probs_lag_states_jd = np.array([self.__call__(jd, lag) for jd, lag in zip(jds, lags)])
@@ -299,7 +299,7 @@ def get_jd(xy:np.array, lag=1, extrapolate=False, filter_frame_intevals=None):
     return jd
     
 
-# def classify_bound_segments(track:simulate.Track, sigma:float, max_lag:int=4, col_name='prediction', extrapolate_edges=True, verbose=False, return_p_unbinds=False):
+# def classify_bound_segments(track:core.Track, sigma:float, max_lag:int=4, col_name='prediction', extrapolate_edges=True, verbose=False, return_p_unbinds=False):
 #     '''
 #     DEPRECATED
 #     Use BayesFilter.predict_states  instead
@@ -356,11 +356,11 @@ sum_list = lambda l: reduce(lambda a, b: a + b, l)
 
 
 
-def get_switching_rates(xytfu:list, fps:float, lag:int=1, column='free'):
+def get_switching_rates(xytfu:core.Track, fps:float, lag:int=1, column:str='free') -> dict:
     '''
     Parameters:
     -----------
-    xytfu: list of simulate.Track objects
+    xytfu: list of core.Track objects
     fps: float
         Framerate
     lag: int
@@ -412,13 +412,13 @@ def get_switching_rates(xytfu:list, fps:float, lag:int=1, column='free'):
     return {'F_bound': n_bound_spots / n_total_spots, 'u_rate_frame': u_rate_frame, 'b_rate_frame': b_rate_frame, 'F_bound_from_rates': b_rate_frame / (u_rate_frame + b_rate_frame) }
 
 # def classify_csv_tracks(
-#     tracks:simulate.Track, 
+#     tracks:core.Track, 
 #     max_lag:int=4, 
 #     col_name='uncertainty_xy [nm]', 
 #     use_map=map
 #     ):
 #     '''
-#     Runs bayes.classify_bound_segments on a list of simulate.Track tracks.
+#     Runs bayes.classify_bound_segments on a list of core.Track tracks.
 #     '''
 #     return list(use_map(lambda t: \
 #          classify_bound_segments(

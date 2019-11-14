@@ -7,7 +7,7 @@ from fastspt import format4DN
 import scipy.io, os, json, xmltodict
 import numpy as np
 import pandas as pd
-from fastspt.simulate import Track
+from fastspt.core import Track
 
 
 def get_exposure_ms_from_path(path, pattern='bleach_(.*?)ms_'):

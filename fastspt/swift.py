@@ -7,7 +7,7 @@ from fastspt import tracklen
 from scipy.optimize import minimize
 from functools import reduce
 from itertools import zip_longest
-from fastspt.simulate import Track
+from fastspt.core import Track
 
 class StroboscopicDataset:
     
