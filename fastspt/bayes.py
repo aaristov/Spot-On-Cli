@@ -192,7 +192,7 @@ class BayesFilter:
 
         return fig
         
-    def plot_bayes(self, x, lag=1):
+    def plot_bayes(self, x, lag=1, fig=True):
         '''
         Shows bayesian probabilities normalized by total probability 
         as function of jump lengths `x` and time lag `lag`
@@ -214,11 +214,15 @@ class BayesFilter:
         bayes_filter = BayesProb(D=[0, 0.2], F=[0.5, 0.5], dt=0.06, sigma=[0.02])
         bayes_filter.plot_bayes(r)
         '''
-        fig = plt.figure()
+        if fig:
+            fig = plt.figure()
         plt.title(f'sigma: {self.sigma}, Δt: {self.dt}')
         [plt.plot(x, p(x, lag)/self._sum_prob(x, lag), label=f'D: {p.D} ({p.F:.0%}), {lag} * Δt') for p in self.probs ]
         plt.legend(loc=(1,0))
-        return fig
+        plt.xlabel('jump distance, μm')
+        plt.ylabel('probability')
+        if fig:
+            return fig
 
 def d_(time, sigma, D): return D * time + sigma ** 2
 
@@ -275,9 +279,9 @@ def get_jd(xy:np.array, lag=1, extrapolate=False, filter_frame_intevals=None):
     """ 
 
     if len(xy) <= lag:
-        logger.warning(f'get_jd: Warning: lag={lag} \
-        is bigger than track lenght {len(xy)}, return []')
-        return []
+        logger.error(f'get_jd: Warning: lag={lag} \
+        is bigger than track lenght {len(xy)}')
+        raise ValueError(f'''get_jd: Error: lag={lag} is bigger than track lenght {len(xy)}''')
         
     dxy = xy[lag:] - xy[:-lag] 
 
