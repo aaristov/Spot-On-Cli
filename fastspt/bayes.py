@@ -31,53 +31,53 @@ class SingleProb:
 
     
 class BayesFilter:
-    '''
-    Helper class to classify states of segments of a track using bayesian inference
-    Inititalize bayes probabilities for given kinetic constants. 
-    D and F must be equal length.
-    Sigma vector can be shorter than number of states. In this case, 
-    later states are using sigma[0] if len(sigma > 1)
-
-    Parameters:
-    -----------
-    D : list
-        Diffusion constants
-    F : list
-        Fractions
-    dt : float
-        time interval of acquisition
-    sigma: list
-        localization errors for different states
-    **kwargs: dict
-        ignored
-    Example:
-    --------
-    >>> track = simulate.track(D_free=0.1, loc_error=0.02, p_binding=1e-2, p_unbinding=3e-2, p_out_of_focus=1e-5, p_bleaching=0.05)
-
-    >>> bayes_filter = BayesFilter(**{'D': [0, .1], 'F': [.2, .8], 'sigma': [0.02], 'dt': 0.06})
-
-    >>> prediction = bayes_filter.predict_states(
-        track,
-        max_lag=4,
-        smooth=0
-    )
-
-    >>> plot.plot_track_multistates(track, cols=['free'], states={'free': [1], 'true bound': [0]}, lim=2)
-    >>> plt.show()
-    >>> plt.plot(prediction, '.-', label='prediction')
-    >>> plt.plot(track.free, '.-', label='true state')
-    >>> plt.ylim(-0.1, 1.1)
-    >>> plt.legend()
-    >>> plt.show()
     
-    # inititalizing three states with second state having confinement with sigm 0.03
-        probs = BayesFilter(D=[0, 0.01, 0.07], F=[0.16, 0.40, 0.44], sigma=[0.017, 0.03])
-        _ = probs.plot_bayes(r)
-          
-    '''
     
     def __init__(self, D=[0, 0.2], F=[0.5, 0.5], dt=0.06, sigma=[0.02], **kwargs):
+        '''
+        Helper class to classify states of segments of a track using bayesian inference
+        Inititalize bayes probabilities for given kinetic constants. 
+        D and F must be equal length.
+        Sigma vector can be shorter than number of states. In this case, 
+        later states are using sigma[0] if len(sigma > 1)
+
+        Parameters:
+        -----------
+        D : list
+            Diffusion constants
+        F : list
+            Fractions
+        dt : float
+            time interval of acquisition
+        sigma: list
+            localization errors for different states
+        **kwargs: dict
+            ignored
+        Example:
+        --------
+        >>> track = simulate.track(D_free=0.1, loc_error=0.02, p_binding=1e-2, p_unbinding=3e-2, p_out_of_focus=1e-5, p_bleaching=0.05)
+
+        >>> bayes_filter = BayesFilter(**{'D': [0, .1], 'F': [.2, .8], 'sigma': [0.02], 'dt': 0.06})
+
+        >>> prediction = bayes_filter.predict_states(
+            track,
+            max_lag=4,
+            smooth=0
+        )
+
+        >>> plot.plot_track_multistates(track, cols=['free'], states={'free': [1], 'true bound': [0]}, lim=2)
+        >>> plt.show()
+        >>> plt.plot(prediction, '.-', label='prediction')
+        >>> plt.plot(track.free, '.-', label='true state')
+        >>> plt.ylim(-0.1, 1.1)
+        >>> plt.legend()
+        >>> plt.show()
         
+        # inititalizing three states with second state having confinement with sigm 0.03
+            probs = BayesFilter(D=[0, 0.01, 0.07], F=[0.16, 0.40, 0.44], sigma=[0.017, 0.03])
+            _ = probs.plot_bayes(r)
+            
+        '''
         assert len(D) == len(F) > 1
         assert sum(F) == 1
         
@@ -97,8 +97,15 @@ class BayesFilter:
         return self.probs[value]
     
     def __call__(self, r:list, lag:int=1):
-        assert isinstance(r, (list, np.ndarray, tuple))
-        assert (isinstance(lag, int), lag > 0)
+        '''
+        Computes probabilities for vector `r` of jumping distances. 
+        First dimension: state, second: distances. 
+        '''
+        assert isinstance(r, (list, np.ndarray, tuple)), f'`r` must be vector, got {type(r)}'
+        assert isinstance(lag, int), f'`lag` must be positive integer, not {lag}'
+        assert lag > 0, f'`lag` must be positive integer, not {lag}'
+
+        r = np.array(r)
         return [p(r, lag)/self._sum_prob(r, lag) for p in self.probs]
         
     def __repr__(self):
