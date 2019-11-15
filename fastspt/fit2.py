@@ -49,10 +49,11 @@ def fit_spoton_2_0(
     **kwargs
 ) -> dict:
 
-    if verbose:
-        print(f'Fit {path}')
-    n_tracks = len(tracks)
-    hists = get_jds_histograms(tracks, n_lags, bins=n_bins, max_um=max_um, disable_tqdm=not verbose) 
+    logger.debug(f'fit2: Fit path: {path}')
+
+    tracks1 = list(filter(lambda t: len(t) > n_lags + 1, tracks))
+    n_tracks = len(tracks1)
+    hists = get_jds_histograms(tracks1, n_lags, bins=n_bins, max_um=max_um, disable_tqdm=not verbose) 
 
     
     fit_result = fit_jd_hist(
@@ -69,8 +70,6 @@ def fit_spoton_2_0(
 
     values = fit_result.params.valuesdict()
     dt = values['dt']
-    # sigma = values['sigma0']
-    # confined_sigma = values['sigma1']
     sigma = [values[f'sigma{i}'] for i in range(len(sigma))]
     D_all = [values[f'D{i}'] for i in range(len(D))]
     F_all = [values[f'F{i}'] for i in range(len(F))]
@@ -88,9 +87,8 @@ def fit_spoton_2_0(
             sigma, 
             D_all, 
             F_all, 
-            plot=True, 
-            use_cdf=False
-        ) for h in hists]
+            plot=True
+         ) for h in hists]
 
     return {
         'sigma': sigma, 
@@ -227,7 +225,6 @@ def get_error_histogram_vs_model(
     sigma:list, 
     D:list, 
     F:list, 
-    use_cdf=False,
     p_density=bayes.p_jd, 
     plot=True,
 ) -> np.ndarray:
@@ -243,10 +240,6 @@ def get_error_histogram_vs_model(
     for d, f, s, in zip_longest(D, F, sigma, fillvalue=sigma[0]):
         # print('_D,_F, sigma: ', d, f, s)
         model = model + p_density(dt * lag, s, d)(vector) * f
-    
-    if use_cdf:
-        model = np.cumsum(model)
-        values = np.cumsum(values)
     
     if plot:
         plt.figure(figsize=(10, 1))

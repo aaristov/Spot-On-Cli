@@ -114,3 +114,8 @@ def test_fit_2_sigmas(sigmas = [0.01, 0.03], n_tracks=5000, D_free=0.1, plot=Fal
 
     return fit_2_sigmas
 
+
+def test_fit_high_lags():
+    tracks = simulate.tracks(num_tracks=100, min_len=3)
+    fit = fit2.fit_spoton_2_0(tracks, n_lags=5, plot=False)
+    assert isinstance(fit, dict)
