@@ -17,7 +17,7 @@ class Track:
         self, 
         array:np.array, 
         columns=['x', 'y', 't', 'f', 'state', 'id'], 
-        units=['um', 'um', 'sec', int, int, int]
+        units=['um', 'um', 'sec', '', '', '']
         ):
         array = np.array(array)
         assert len(columns) == array.shape[1]
@@ -52,7 +52,7 @@ class Track:
                 return self.sub_columns(ind)
             else:
                 raise ValueError(f'column `{item}` not found, available columns: `{self.columns}`')
-    
+
     def __getitem__(self, key):
         try:
             return self.array[tuple(key)]
@@ -61,12 +61,13 @@ class Track:
     
     def __setitem__(self, key, value):
         try:
-            arr = self.array.copy()
+            arr = self.array#.copy()
             arr[key] = value
-            return Track(arr, self.columns, self.units)
-        except Exception as e:
-            logger.warning('unable to set the new values: ', *e.args)
+            # return Track(arr, self.columns, self.units)
             return self
+        except ValueError as e:
+            logger.warning('unable to set the new values: ', *e.args)
+            raise e
             
             
     
