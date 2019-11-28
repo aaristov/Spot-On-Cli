@@ -4,6 +4,7 @@ from itertools import zip_longest
 import matplotlib.pyplot as plt
 from fastspt import bayes
 from tqdm.auto import tqdm
+import pandas as pd
 import logging
 logger = logging.getLogger(__name__)
 
@@ -103,6 +104,30 @@ def fit_spoton_2_0(
         'path': path,
         **kwargs}
 
+
+def result_2_table(results:[dict]):
+    new_dict = {}
+    for r, res in enumerate(results):
+        for k, v in res.items():
+            if isinstance(v, (float, int, str)):
+                try:
+                    new_dict[k][r] = v
+                except KeyError:
+                    new_dict[k] = {}
+                    new_dict[k][r] = v
+            elif isinstance(v, (list, np.ndarray)):
+                for i, vv in enumerate(v):
+                    try:
+                        new_dict[f'{k}_{i}'][r] = vv
+                    except KeyError:
+                        new_dict[f'{k}_{i}'] = {}
+                        new_dict[f'{k}_{i}'][r] = vv
+            else:
+                pass
+#                 print(f'skip {k}')
+    df = pd.DataFrame.from_dict(new_dict)
+    df.index.name = 'replicate'
+    return df
 
 def fit_jd_hist(
     hists:list, 
