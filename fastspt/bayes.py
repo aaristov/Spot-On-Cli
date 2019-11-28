@@ -89,6 +89,7 @@ class BayesFilter:
         for d, f, s in zip_longest(D, F, sigma, fillvalue=sigma[0]):
             p = SingleProb(d, f, dt, s) 
             self.probs.append(p)
+        self.__repr__()
     
     def _sum_prob(self, r, lag=1):
         return sum([p(r, lag) for p in self.probs])
@@ -110,7 +111,7 @@ class BayesFilter:
         
     def __repr__(self):
         return f'Bayes prob: {self.n_states} states' + '\n' + \
-    '\n'.join([f'{p}' for p in self.probs])
+    '\n'.join([f'{i} state: {p}' for i, p in enumerate(self.probs)])
     
     @property
     def n_states(self):
@@ -157,6 +158,29 @@ class BayesFilter:
             current_state_jd = np.round(gf1(current_state_jd, smooth), 0).astype(int)
 
         return current_state_jd
+
+    def add_states_single(self, track:core.Track, col='states', comments='', max_lag=4, 
+        smooth:float=0
+    ) -> core.Track:
+        '''
+        Computes the states for single track and stores them 
+        into `col` with [`comments`]
+        '''
+        states = self.predict_states(track, max_lag, smooth)
+        new_track = track.add_column(col, states, comments)
+        return new_track
+    
+    def add_states_many(self, tracks:[core.Track], col='states', comments='', max_lag=4, smooth:float=0) -> [core.Track]:
+        '''
+        Computes the states for list of tracks and stores them 
+        into `col` with [`comments`]
+        '''
+        tracks_with_states = [
+            self.add_states_single(t, col, comments, max_lag, smooth)
+            for t in tqdm(tracks)
+        ]
+        return tracks_with_states
+
     
     def plot_jd(self, x, lag=1):
         '''
