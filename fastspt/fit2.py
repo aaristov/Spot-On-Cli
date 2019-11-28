@@ -53,6 +53,9 @@ def fit_spoton_2_0(
 
     tracks1 = list(filter(lambda t: len(t) > n_lags + 1, tracks))
     n_tracks = len(tracks1)
+
+    logger.info(f'select {n_tracks} out of {len(tracks)} with length > {n_lags + 1}')
+
     hists = get_jds_histograms(tracks1, n_lags, bins=n_bins, max_um=max_um, disable_tqdm=not verbose) 
 
     
@@ -91,9 +94,9 @@ def fit_spoton_2_0(
          ) for h in hists]
 
     return {
-        'sigma': sigma, 
-        'D': D_all,
-        'F': F_all,
+        'sigma': list(sigma), 
+        'D': list(D_all),
+        'F': list(F_all),
         'dt': dt,
         'fit_result': fit_result,
         'n_tracks': n_tracks, 
