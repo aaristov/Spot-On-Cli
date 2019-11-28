@@ -75,6 +75,19 @@ def read_trackmate_xml(path, min_len=3):
         raise e
     return traces
 
+def remove_edge_tracks(tracks):
+    ''' 
+    Removes the tracks toucihng the edge of the frame.
+    Trackmate rally bugs at the edges, returning localizations
+    stick to the pixels. These localizations produce spikes 
+    in jump length distributions. With this function spikes are removed.
+    '''
+    x_min = min([t.x.min() for t in tracks])
+    x_max = max([t.x.max() for t in tracks])
+    y_min = min([t.y.min() for t in tracks])
+    y_max = max([t.y.max() for t in tracks])
+    return list(filter(lambda t: t.x.min() > x_min and t.x.max() < x_max and t.y.min() > y_min and t.y.max() < y_max , tracks))
+
 ## ==== CSV file format
 def read_csv(fn):
     return read_arbitrary_csv(fn, col_traj="trajectory", col_x="x", col_y="y", col_frame="frame", col_t="t")
