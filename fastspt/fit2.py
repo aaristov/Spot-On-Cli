@@ -105,7 +105,7 @@ def fit_spoton_2_0(
         **kwargs}
 
 
-def result_2_table(results:[dict]):
+def result_2_table(*results:[dict]):
     new_dict = {}
     for r, res in enumerate(results):
         for k, v in res.items():
