@@ -49,7 +49,7 @@ def fit_spoton_2_0(
     **kwargs
 ) -> dict:
 
-    logger.debug(f'fit2: Fit path: {path}')
+    logger.info(f'fit_spoton_2_0: Fit path: {path}')
 
     tracks1 = list(filter(lambda t: len(t) > n_lags + 1, tracks))
     n_tracks = len(tracks1)
@@ -80,7 +80,7 @@ def fit_spoton_2_0(
 
     if plot:
         
-        logger.info(f'Plot fit for (D, F): {(D, F)}, {n_lags} lags')
+        logger.info(f'fit_spoton_2_0: Plot fit for (D, F): {(D_all, F_all)}, {n_lags} lags')
         _ = [get_error_histogram_vs_model(
             h, 
             dt, 
