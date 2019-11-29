@@ -7,6 +7,7 @@ from tqdm.auto import tqdm
 import pandas as pd
 import logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARN)
 
 
 class JumpLengthHistogram:
@@ -23,10 +24,7 @@ class JumpLengthHistogram:
         assert len(self.vector) == len(self.hist)
     
     def __repr__(self):
-        return f"""JumpLengthHistogram: \
-            \n\tlag: {self.lag} \
-            \n\tvector: {self.vector} \
-            \n\tvalues: {self.hist}"""
+        return f"""JumpLengthHistogram: {self.lag} lag, {len(self.vector)} elements"""
     
     def __len__(self):
         return len(self.vector)
@@ -47,6 +45,8 @@ def fit_spoton_2_0(
     n_bins=50,
     max_um=0.6,
     verbose=False,
+    return_fit_result=False,
+    return_hists=False,
     **kwargs
 ) -> dict:
 
@@ -94,18 +94,25 @@ def fit_spoton_2_0(
             plot=True
          ) for h in hists]
 
-    return {
+    out = {
         'sigma': list(sigma), 
         'D': list(D_all),
         'F': list(F_all),
         'dt': dt,
-        'fit_result': fit_result,
         'n_tracks': n_tracks, 
         'chi2': fit_result.chisqr, 
         'chi2_norm': fit_result.chisqr / n_bins / n_lags,
         'n_iter': fit_result.nfev,
         'path': path,
         **kwargs}
+
+    if return_fit_result:
+        out['fit_result'] = fit_result
+
+    if return_hists:
+        out['hists'] = hists
+    
+    return out
 
 
 def result_2_table(*results:[dict]):
@@ -281,22 +288,22 @@ def get_error_histogram_vs_model(
                 label=f'{name}$_{i}$: {_D:.2f}, σ: {s:.3f}, fraction {_F:.0%}'
             )
         plt.plot(vector, model, 'r-', label='sum model')
-        plt.bar(
+
+        plot_hist(
             vector, 
             values, 
-            width=np.diff(vector)[0], 
             label=f'jd {lag} lag', 
             fill=None,
             alpha=0.8
         )
-        plt.bar(
+
+        plot_hist(
             vector, 
-            model - values, 
-            width=np.diff(vector)[0], 
+            model - values,
             label=f'residuals', 
             fill='red'
         )
-        
+                
         plt.title('sigma ' + ', '.join([f'{s:.3f}' for s in sigma]))
         plt.legend(loc=(1, 0))
         plt.show()
@@ -332,3 +339,14 @@ def cumulative_error_jd_hist(
     ]
     return np.concatenate(cum, axis=0)
     
+
+def plot_hist(vector, values, label, **kwargs):
+    '''
+    Simple barplot with autimatic calculation of bin width
+    '''
+    plt.bar(
+        vector, 
+        values, 
+        width=np.diff(vector)[0],
+        **kwargs
+    )
