@@ -7,7 +7,7 @@ from fastspt import format4DN
 import scipy.io, os, json, xmltodict
 import numpy as np
 import pandas as pd
-from fastspt.simulate import Track
+from fastspt.core import Track
 
 
 def get_exposure_ms_from_path(path, pattern='bleach_(.*?)ms_'):
@@ -74,6 +74,19 @@ def read_trackmate_xml(path, min_len=3):
         print(f'problem with {path}')
         raise e
     return traces
+
+def remove_edge_tracks(tracks):
+    ''' 
+    Removes the tracks toucihng the edge of the frame.
+    Trackmate rally bugs at the edges, returning localizations
+    stick to the pixels. These localizations produce spikes 
+    in jump length distributions. With this function spikes are removed.
+    '''
+    x_min = min([t.x.min() for t in tracks])
+    x_max = max([t.x.max() for t in tracks])
+    y_min = min([t.y.min() for t in tracks])
+    y_max = max([t.y.max() for t in tracks])
+    return list(filter(lambda t: t.x.min() > x_min and t.x.max() < x_max and t.y.min() > y_min and t.y.max() < y_max , tracks))
 
 ## ==== CSV file format
 def read_csv(fn):

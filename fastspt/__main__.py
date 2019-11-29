@@ -4,7 +4,7 @@ import argparse
 import json
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARN)
 logger = logging.getLogger(__name__)
 
 def pprint(d:dict):

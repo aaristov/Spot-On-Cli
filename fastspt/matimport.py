@@ -4,7 +4,7 @@ import os
 import numpy as np
 from scipy.io import loadmat
 from tqdm.auto import tqdm
-from fastspt import readers, tracklen, tools
+from fastspt import readers, tracklen, tools, core
 import pandas as pd
 try:
     from IPython.core.display import display
@@ -34,7 +34,12 @@ def concat_all(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     tracks = []
     for i in tqdm(range(n_rep)):
         for fov in tqdm(rep_fov_xyft[i], desc=f'rep {i+1}'):
-            grouped = group_tracks(fov, min_len, exposure_ms, pixel_size_um)
+            grouped = group_tracks(
+                fov, 
+                min_len=min_len, 
+                exposure_ms=exposure_ms, 
+                pixel_size_um=pixel_size_um
+            )
             tracks = sum([tracks, grouped], [])
             
     print(f'Total {len(tracks)} tracks')
@@ -54,8 +59,12 @@ def concat_reps(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     for i in tqdm(range(n_rep)):
         tracks = []
         for fov in tqdm(rep_fov_xyft[i], desc=f'rep {i+1}'):
-            grouped = group_tracks(fov, min_len, exposure_ms, pixel_size_um)
-            tracks = sum([tracks, grouped], [])
+            grouped = group_tracks(
+                fov, 
+                min_len=min_len, 
+                exposure_ms=exposure_ms, 
+                pixel_size_um=pixel_size_um)
+            tracks = tracks + grouped
         reps.append(tracks) 
         print(f'Replicate {i+1}: Total {len(tracks)} tracks')
 
@@ -64,7 +73,7 @@ def concat_reps(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
 def group_tracks(
     xyft:np.ndarray, 
     min_len:int=3, 
-    max_len:int=20, 
+    max_len:int=np.inf, 
     exposure_ms:float=None, 
     pixel_size_um:float=None
     ):
@@ -114,7 +123,12 @@ def group_tracks(
         try:
             if len(track) >= min_len and len(track) <= max_len:
                 track_sorted_by_frame = track[np.argsort(track[:,3])]
-                tracks.append(track_sorted_by_frame)
+                track_object = core.Track(
+                    track_sorted_by_frame, 
+                    columns=['x', 'y', 't', 'frame'],
+                    units=['um', 'um', 'sec', '']
+                )
+                tracks.append(track_object)
         except Exception as e:
             print(min_len)
             raise e

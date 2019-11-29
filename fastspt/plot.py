@@ -11,7 +11,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-from fastspt import fit, plot, bind
+from fastspt import fit, plot, bind, simulate, bayes, core
 import lmfit
 
 
@@ -21,6 +21,107 @@ def threshold_sqr_displacement(sd, thr=0.005):
     Returns 0 if below threshold, 1 otherwise
     '''
     return np.where(sd < thr, 0, 1)
+
+def select_states(track,
+    cols=['s0','s1'], 
+    states={'free': [1, 1], 'med': [0, 1], 'bound': [0, 0]},
+):
+    segs = {}
+    for label, values in states.items():
+        sel = [track.col(col) == v for col, v in zip(cols, values)]
+        if len(sel)>1:
+            sel = np.logical_and(*sel)
+        segs[label] = track[sel]
+    return segs
+    
+def plot_track_multistates(
+    track: core.Track, 
+    cols=['s0','s1'], 
+    states={'free': [1, 1], 'med': [1, 0], 'bound': [0, 0]}, 
+    exclude='free',
+    msd=False,
+    lim=0.5, 
+    jd_lim=0.3, 
+    n_lags=3,
+    title=''
+):
+
+    segs = select_states(track, cols=cols, states=states)
+    
+#     labels = states.keys()
+    
+    if msd:
+        base = 130
+        figsize=(15, 4)
+    else:
+        base = 120
+        figsize=(10, 4)
+    
+    fig = plt.figure(figsize=figsize)
+
+    fig.add_subplot(base + 1)
+    plt.plot(track.x, track.y, '.-', label='trajectory xy')
+        
+    plt.plot(track.x[0], track.y[0], 'o', label='start')
+    plt.plot(track.x[-1], track.y[-1], 'o', label='end')
+    
+    for label, seg in segs.items():
+        if len(seg) and label is not exclude:
+            plt.plot(seg[:,0], seg[:,1], '.', label=label)
+
+    plt.xlim(track[:,0].mean() - lim, track[:,0].mean() + lim)
+    plt.ylim(track[:,1].mean() - lim, track[:,1].mean() + lim)
+    # plt.axis('equal')
+
+    plt.grid()
+    plt.legend()
+    plt.title(title)
+
+
+    fig.add_subplot(base+2)
+
+    def get_jds(track):
+        return [bayes.get_jd(track.xy, lag=l + 1, extrapolate=1) for l in range(n_lags)]
+    
+    jds = get_jds(track)
+    
+    # frames = np.arange(len(jds[0]))
+    try:
+        [plt.plot(track.frame, jd, label=f'jump length {i + 1} Δt', alpha=0.5) for i, jd in enumerate(jds)]
+        #     plt.plot(frames[jd_bound_filter], jds[0][jd_bound_filter], 'r.', label='bound')
+
+        for label, seg in segs.items():
+            if len(seg) and label is not exclude:
+                plt.plot(seg[:,3], np.zeros(len(seg)), 'o', label=label, alpha=0.5)  
+    except ValueError:
+        pass
+        
+    try:
+#         plt.plot(track.frame, track.col('uncertainty_xy [nm]'), label='sigma')
+        plt.plot(track.frame, track.col('uncertainty_xy [nm]') * 3, label='3 * sigma')
+    except Exception:
+        pass
+    
+    try:
+        swift_id = track.col('seg.id')
+        plt.plot(track.frame, (swift_id - min(swift_id)) * jd_lim, label='swift id')
+    except Exception:
+        pass
+    
+    
+    plt.ylim(-0.01, jd_lim * 1.05)
+    plt.legend(loc=(1, 0.5))
+    
+    if msd:
+        fig.add_subplot(base+3)
+
+
+        msd = [np.mean(bayes.get_jd(track.xy, lag=l + 1) ** 2) for l in range(len(track)-2)]
+        plt.plot(msd)
+        plt.xlabel('frame lag')
+        plt.title('MSD')
+
+    plt.tight_layout()
 
 def plot_track_xy_sd(track_xytf, figsize=(8,4), xy_radius=0.3, sd_max=0.2, bound_sd=0.01, title=None):
     
@@ -157,13 +258,13 @@ def plot_histogram(HistVecJumps, emp_hist, HistVecJumpsCDF=None, sim_hist=None,
         if type(sim_hist) != type(None): ## HistVecJumpsCDF should also be provided
             plt.plot(HistVecJumpsCDF, scaled_y[i,:]+new_level, 'k-', linewidth=2)
         if TimeGap != None:
-            plt.text(0.6*max(HistVecJumps), new_level+0.3*histogram_spacer, '$\Delta t$ : {} ms'.format(TimeGap*(i+1)))
+            plt.text(0.6*max(HistVecJumps), new_level+0.3*histogram_spacer, r'$\Delta t$ : {} ms'.format(TimeGap*(i+1)))
         else:
-            plt.text(0.6*max(HistVecJumps), new_level+0.3*histogram_spacer, '${} \Delta t$'.format(i+1))
+            plt.text(0.6*max(HistVecJumps), new_level+0.3*histogram_spacer, r'${} \Delta t$'.format(i+1))
 
     plt.xlim(0,HistVecJumps.max())
     plt.ylabel('Probability')
-    plt.xlabel('jump length ($\mu m$)')
+    plt.xlabel(r'jump length ($\mu m$)')
     if type(sim_hist) != type(None):
         plt.title('{}; Cell number {}; Fit Type = {}; Dfree = {}; Dbound = {}; FracBound = {}, Total trajectories: {}; => Length 3 trajectories: {}, \nLocs = {}, Locs/Frame = {}; jumps: {}'
           .format(
