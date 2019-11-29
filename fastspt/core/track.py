@@ -59,18 +59,6 @@ class Track:
         except IndexError:
             return self.array[np.ravel(key)]
     
-    def __setitem__(self, key, value):
-        try:
-            arr = self.array#.copy()
-            arr[key] = value
-            # return Track(arr, self.columns, self.units)
-            return self
-        except ValueError as e:
-            logger.warning('unable to set the new values: ', *e.args)
-            raise e
-            
-            
-    
     def __repr__(self):
         return repr(pd.DataFrame(columns=[f'{c} [{u}]' for c, u in zip(self.columns, self.units)], data=self.array))
     
