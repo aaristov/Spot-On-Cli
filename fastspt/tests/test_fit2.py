@@ -119,3 +119,16 @@ def test_fit_high_lags():
     tracks = simulate.tracks(num_tracks=100, min_len=3)
     fit = fit2.fit_spoton_2_0(tracks, n_lags=5, plot=False)
     assert isinstance(fit, dict)
+
+def test_fit_return_hists():
+    tracks = simulate.tracks(num_tracks=100, min_len=3)
+    fit = fit2.fit_spoton_2_0(tracks, n_lags=5, plot=False, return_hists=True)
+    hists = fit['hists']
+    assert len(hists) == 5
+    assert [isinstance(h, fit2.JumpLengthHistogram) for h in hists]
+
+def test_fit_return_fit():
+    tracks = simulate.tracks(num_tracks=100, min_len=3)
+    fit = fit2.fit_spoton_2_0(tracks, n_lags=5, plot=False, return_hists=False, return_fit_result=True)
+    fit_result = fit['fit_result']
+    assert isinstance(fit_result, fit2.lmfit.minimizer.MinimizerResult)
