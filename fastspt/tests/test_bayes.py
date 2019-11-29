@@ -125,6 +125,5 @@ def test_switching_rates():
       
 def test_big_lag():
     track = simulate.track()
-    with pytest.raises(ValueError):
-        bayes.get_jd(track, lag=len(track))
+    assert bayes.get_jd(track, lag=len(track)) == []
     

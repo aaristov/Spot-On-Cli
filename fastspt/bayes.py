@@ -303,10 +303,12 @@ def get_jd(xy:np.array, lag=1, extrapolate=False, filter_frame_intevals=None):
     """ 
 
     if len(xy) <= lag:
-        logger.error(f'get_jd: Warning: lag={lag} \
-        is bigger than track lenght {len(xy)}')
-        raise ValueError(f'''get_jd: Error: lag={lag} is bigger than track lenght {len(xy)}''')
-        
+        return []
+    #     logger.error(f'get_jd: Warning: lag={lag} \
+    #     is bigger than track lenght {len(xy)}')
+    #     raise ValueError(f'''get_jd: Error: lag={lag} is bigger than track lenght {len(xy)}''')
+
+     
     dxy = xy[lag:] - xy[:-lag] 
 
     if filter_frame_intevals is not None:
