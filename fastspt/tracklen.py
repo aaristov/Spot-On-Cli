@@ -17,7 +17,7 @@ def get_track_lengths_dist(cell, plot=True):
             plt.hist(cell)
             plt.show()
         return False
-    
+
 
 def get_hist(cell):
     track_lengths = list(map(len, cell))
@@ -43,7 +43,7 @@ def fit_exponent(hist, bins, fun=exponent, p0=None):
 def plot_hist_fit(hist, bins, fit_result, popt):
     a, c, d = popt
     plt.bar(
-        bins, hist, fill=None, 
+        bins, hist, fill=None,
         label=f'Weighted mean = {np.average(bins, weights=hist):.1f}')
     plt.plot(bins, fit_result, label=f'{a:.2f}*np.exp(-x/{c:.2f})+{d:.2f}')
     plt.title('Track length distribution')

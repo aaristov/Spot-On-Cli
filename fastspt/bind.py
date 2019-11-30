@@ -36,28 +36,28 @@ def count_on_off(
 ):
     '''
     Counts on/off cases inside the track.
-    Track [[x1, y1, time1, frame1], [...]] 
+    Track [[x1, y1, time1, frame1], [...]]
     is converted do square displacements.
-    Displacements are converted to 0 and 1: 
+    Displacements are converted to 0 and 1:
     jumps below threshold get 0, otherwise: 1.
-    Then on_seq and off_seq occurances are counted 
+    Then on_seq and off_seq occurances are counted
     inside the sequence (kon, koff).
-    
+
     Arguments:
 
     track_xytf: 2d nd.array
 
     Threshold: float, optional
-        Threshold for square displacements. Lower values become 0, higher: 1. 
+        Threshold for square displacements. Lower values become 0, higher: 1.
 
     on_seq: list of 0 and 1, optional
         sequence of binding event
 
     on_seq: list of 0 and 1, optional
         sequence of unbinding event
-    
-    Returned: 
-    
+
+    Returned:
+
     (kon, koff) : tuple (int, int)
         number of binidn g and unbinding event per track
     '''
@@ -75,19 +75,19 @@ def count_on_off(
 
 
 def count_on_off_tracks(
-    tracks, min_len=7, threshold=0.005, 
+    tracks, min_len=7, threshold=0.005,
     on_seq=[1, 0, 0, 0], off_seq=[0, 0, 0, 1]
 ):
     '''
-    Counts template occurance in the list of treack with format  
+    Counts template occurance in the list of treack with format
     [[x1, y1, time1, frame1], [...]].
     Return (kon, koff) for all tracks.
     '''
     if min_len:
         tracks = list(filter(lambda t: len(t) >= min_len, tracks))
-    
-    def get_counts(track): 
+
+    def get_counts(track):
         return count_on_off(track, threshold, on_seq, off_seq)
-    
+
     matched_counts = list(map(get_counts, tracks))
     return np.array(matched_counts).sum(axis=0)

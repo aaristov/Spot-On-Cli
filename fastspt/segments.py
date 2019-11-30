@@ -4,7 +4,7 @@ from functools import reduce
 from tqdm.auto import tqdm
 
 
-# tools to break tracks into segments 
+# tools to break tracks into segments
 # based on predefined column with states
 
 
@@ -23,7 +23,7 @@ def get_populations(
     values: tuple of any type, default (0, 1)
         Whatever values you expect in the `column_with_states`
     min_len: int, default 3
-        Minimal length of output segments. 
+        Minimal length of output segments.
         All segments shorter than this number will be regected.
 
     Return:
@@ -37,7 +37,7 @@ def get_populations(
     pops = list(list(filter(
         lambda t: t.col(column_with_states).mean() == v, segments_longer
     )) for v in values)
-    
+
     return pops
 
 
@@ -53,10 +53,10 @@ def assign_seg_id(states, id0=1):
 
 
 def add_seg_id_to_track(
-    track: core.Track, 
-    column_with_states='free', 
-    start_id=0, 
-    new_column='seg_id', 
+    track: core.Track,
+    column_with_states='free',
+    start_id=0,
+    new_column='seg_id',
     return_new_id=False
 ) -> core.Track:
 
@@ -79,8 +79,8 @@ def add_seg_id_to_tracks(
         new_tracks.append(new_track)
         cur_id = i + 1
     return new_tracks
-        
-        
+
+
 def break_into_segments(track, column_with_seg_id='seg_id'):
     _, indices = np.unique(track.col(column_with_seg_id), return_index=True)
     indices = list(indices)

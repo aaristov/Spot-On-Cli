@@ -8,9 +8,9 @@ def test_select_pops(
     num_tracks=100,
     p_bleaching=0.05
 ):
-    
+
     tracks = simulate.tracks(
-        num_tracks, p_binding=p_binding, p_unbinding=p_unbinding, 
+        num_tracks, p_binding=p_binding, p_unbinding=p_unbinding,
         p_bleaching=p_bleaching)
 
     pops = segments.get_populations(
@@ -20,7 +20,7 @@ def test_select_pops(
 
     for p in pops:
         assert len(p) > 0
-    
+
     n_bound = sum([len(p) for p in pops[0]])
     n_free = sum([len(p) for p in pops[1]])
     bound_f = n_bound / (n_bound + n_free)
@@ -32,6 +32,6 @@ def test_select_pops(
 def test_add_seg_id_to_track():
     track = simulate.track()
     new_track = segments.add_seg_id_to_track(
-        track, column_with_states='free', 
+        track, column_with_states='free',
         start_id=0, new_column='seg_id', return_new_id=False)
     assert isinstance(new_track.seg_id, np.ndarray)

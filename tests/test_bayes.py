@@ -4,15 +4,15 @@ import numpy as np
 
 
 def test_2_states_classification(Ds=[0.0, .08], num_tracks=1000):
-    
+
     tracks = simulate.tracks(
         num_tracks=num_tracks,
-        D_bound=Ds[0], 
-        D_free=Ds[1], 
-        loc_error=0.02, 
-        p_binding=1e-2, 
-        p_unbinding=4e-2, 
-        p_out_of_focus=1e-5, 
+        D_bound=Ds[0],
+        D_free=Ds[1],
+        loc_error=0.02,
+        p_binding=1e-2,
+        p_unbinding=4e-2,
+        p_out_of_focus=1e-5,
         p_bleaching=0.1,
         use_tqdm=False
     )
@@ -37,7 +37,7 @@ def test_2_states_classification(Ds=[0.0, .08], num_tracks=1000):
     r = np.arange(0.01, 0.3, 0.01)
     fig1 = bayes_filter.plot_bayes(r)
     fig2 = bayes_filter.plot_jd(r)
-    
+
     assert isinstance(fig1, plot.plt.Figure)
     assert isinstance(fig2, plot.plt.Figure)
 
@@ -49,18 +49,18 @@ def test_2_states_classification(Ds=[0.0, .08], num_tracks=1000):
 
     with pytest.raises(AssertionError):
         bayes_filter([1, 2], 0)
-    
+
 
 def test_2_states_classification_smooth(Ds=[0.0, .08], num_tracks=1000):
-    
+
     tracks = simulate.tracks(
         num_tracks=num_tracks,
-        D_bound=Ds[0], 
-        D_free=Ds[1], 
-        loc_error=0.02, 
-        p_binding=1e-2, 
-        p_unbinding=4e-2, 
-        p_out_of_focus=1e-5, 
+        D_bound=Ds[0],
+        D_free=Ds[1],
+        loc_error=0.02,
+        p_binding=1e-2,
+        p_unbinding=4e-2,
+        p_out_of_focus=1e-5,
         p_bleaching=0.1,
         use_tqdm=False
     )
@@ -107,16 +107,16 @@ def test_p_jd():
 def test_switching_rates():
 
     tracks = simulate.tracks(
-        num_tracks=1e3, 
-        dt=0.06, 
-        D_bound=0, 
-        D_free=0.06, 
-        loc_error=0.02, 
-        p_binding=1e-4, 
-        p_unbinding=1e-3, 
-        p_bleaching=1e-1, 
-        p_out_of_focus=1e-5, 
-        min_len=5, 
+        num_tracks=1e3,
+        dt=0.06,
+        D_bound=0,
+        D_free=0.06,
+        loc_error=0.02,
+        p_binding=1e-4,
+        p_unbinding=1e-3,
+        p_bleaching=1e-1,
+        p_out_of_focus=1e-5,
+        min_len=5,
         use_tqdm=False
     )
 
@@ -131,4 +131,3 @@ def test_switching_rates():
 def test_big_lag():
     track = simulate.track()
     assert bayes.get_jd(track, lag=len(track)) == []
-    

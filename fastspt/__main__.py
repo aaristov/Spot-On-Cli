@@ -65,7 +65,7 @@ def main(args=None, callback=None):
 
     except TypeError:
         error(f'Wrong args while parsing: {args}')
-        
+
         exit(1)
 
     if not args.command:

@@ -36,13 +36,13 @@ def concat_all(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     for i in tqdm(range(n_rep)):
         for fov in tqdm(rep_fov_xyft[i], desc=f'rep {i+1}'):
             grouped = group_tracks(
-                fov, 
-                min_len=min_len, 
-                exposure_ms=exposure_ms, 
+                fov,
+                min_len=min_len,
+                exposure_ms=exposure_ms,
                 pixel_size_um=pixel_size_um
             )
             tracks = sum([tracks, grouped], [])
-            
+
     print(f'Total {len(tracks)} tracks')
     return [tracks]
 
@@ -52,7 +52,7 @@ def concat_reps(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
     Concatenates data by replicates
     returns [xyft_table_rep1, ..., ..._repN]
     '''
-    
+
     n_rep = len(rep_fov_xyft)
     each_len_rep = [len(t) for t in rep_fov_xyft]
     print(f'discovered {n_rep} replicates containing {each_len_rep} \
@@ -64,39 +64,39 @@ def concat_reps(rep_fov_xyft, min_len=3, exposure_ms=None, pixel_size_um=None):
         tracks = []
         for fov in tqdm(rep_fov_xyft[i], desc=f'rep {i+1}'):
             grouped = group_tracks(
-                fov, 
-                min_len=min_len, 
-                exposure_ms=exposure_ms, 
+                fov,
+                min_len=min_len,
+                exposure_ms=exposure_ms,
                 pixel_size_um=pixel_size_um)
             tracks = tracks + grouped
-        reps.append(tracks) 
+        reps.append(tracks)
         print(f'Replicate {i+1}: Total {len(tracks)} tracks')
 
     return reps
 
 
 def group_tracks(
-    xyft: np.ndarray, 
-    min_len: int = 3, 
-    max_len: int = np.inf, 
-    exposure_ms: float = None, 
+    xyft: np.ndarray,
+    min_len: int = 3,
+    max_len: int = np.inf,
+    exposure_ms: float = None,
     pixel_size_um: float = None
 ):
     '''
     Accepts four-column dataset xyft with x, y, frame, track.id columns.
-    Returns groups of tracks with the same id after filtering min and max 
+    Returns groups of tracks with the same id after filtering min and max
     number of localizations and appluing exposure and pixel size.
-    
+
     Parameters
     ----------
 
     xyft : pandas.Dataframe or nd.array with 4 columns
     min_len : int, optional
-        only return tracks with more min_len localizations 
+        only return tracks with more min_len localizations
     max_len : int, optional
-        only return tracks with less max_len localizations 
+        only return tracks with less max_len localizations
     exposure_ms : float, optional
-        if not None, multiplies third column to get time in seconds out of 
+        if not None, multiplies third column to get time in seconds out of
         frames
     exposure_ms : float, optional
         if not None, multiplies first two to get microns out of pixels
@@ -104,14 +104,14 @@ def group_tracks(
     Returns
     -------
 
-    tracks : list 
-        list of individual tracks, where individual tracks are 4 columns 
-        x, y, time, frame with localizations linked together. 
+    tracks : list
+        list of individual tracks, where individual tracks are 4 columns
+        x, y, time, frame with localizations linked together.
         This format is compatible with fastspt.readers.to_fastSPT()
     '''
     # print(xyft.head)
     xyft = np.array(xyft)
-    assert xyft.ndim == 2 
+    assert xyft.ndim == 2
     assert xyft.shape[1] == 4, f'wrong number of columns: expected 4, \
         got {xyft.shape[1]}. Abort'
     xyft = xyft[np.argsort(xyft[:, 3])]
@@ -120,17 +120,17 @@ def group_tracks(
     xyft[:, 3] = xyft[:, 2]  # xyff
     if exposure_ms:
         xyft[:, 2] = xyft[:, 2] * exposure_ms * 1.e-3  # xytf
-    
+
     if pixel_size_um:
         xyft[:, :2] = xyft[:, :2] * pixel_size_um
-        
+
     for i, ii in tqdm(zip(ids[:-1], ids[1:]), disable=True):
         track = xyft[i:ii]
         try:
             if len(track) >= min_len and len(track) <= max_len:
                 track_sorted_by_frame = track[np.argsort(track[:, 3])]
                 track_object = core.Track(
-                    track_sorted_by_frame, 
+                    track_sorted_by_frame,
                     columns=['x', 'y', 't', 'frame'],
                     units=['um', 'um', 'sec', '']
                 )
@@ -150,21 +150,21 @@ def analyse_mat_file(data_path,
                      plot_track_len=False,
                      **fit_params
                      ):
-    
+
     print(f'Analysing {data_path}')
 
     pprint(fit_params)
     all_exp = read_gizem_mat(data_path)
-    
+
     if all_exp:
         reps = concat_reps(
-            all_exp, min_len=min_len, exposure_ms=exposure_ms, 
+            all_exp, min_len=min_len, exposure_ms=exposure_ms,
             pixel_size_um=pixel_size_um)
     for rep in reps:
         tracklen.get_track_lengths_dist(rep, plot=plot_track_len)
-        
+
     def my_fit(rep):
-    
+
         cell_spt = readers.to_fastSPT(rep, from_json=False)
         fit_result = tools.auto_fit(cell_spt,
                                     **fit_params)
@@ -187,13 +187,13 @@ def analyse_mat_files(
 
 
 def get_stats(
-    reps_fits, save_path=None, print_stats=True, 
+    reps_fits, save_path=None, print_stats=True,
     save_fmt='json', suffix='.stats'
 ):
     # get stats
     fit_stats = pd.DataFrame(
         columns=list(reps_fits[0].best_values.keys()) + ['chi2'])
-    
+
     for i, fit_result in enumerate(reps_fits):
         fit_stats.loc[
             f'rep {i+1}'] = list(
@@ -202,7 +202,7 @@ def get_stats(
 
     fit_stats.loc['mean'] = fit_stats.mean(axis=0)
     fit_stats.loc['std'] = fit_stats.std(axis=0)
-    
+
     if save_path:
         path = f'{save_path}{suffix}.{save_fmt}'
         getattr(fit_stats, 'to_' + save_fmt)(path)
@@ -227,7 +227,7 @@ class MatlabTable:
     '''
     Summarizes the routines needed to process tracking tables.
     '''
-    
+
     def __init__(self, raw_tracks: list):
         self.rep_fov_xyft = raw_tracks
         self.n_rep = len(self.rep_fov_xyft)
@@ -235,7 +235,7 @@ class MatlabTable:
         logger.info(
             f'discovered {self.n_rep} replicates containing \
             {each_len_rep} acquisitions')
-                
+
     def concat_all(self, min_len=3, exposure_ms=None, pixel_size_um=None):
         logger.info(f'Assembling tracks with minimal length {min_len}, \
             using exposure {exposure_ms} ms and px size {pixel_size_um} µm')
@@ -253,29 +253,29 @@ class MatlabTable:
             f'Assembling tracks with minimal length {min_len}, \
                 using exposure {exposure_ms} ms and px size \
                 {pixel_size_um} µm')
-        
+
         reps = []
         for i in tqdm(range(self.n_rep)):
             fovs = self.rep_fov_xyft[i]
             rep = self.group_fovs(
                 fovs, min_len, exposure_ms, pixel_size_um, desc=f'rep {i+1}')
-            reps.append(rep) 
+            reps.append(rep)
             logger.info(f'Replicate {i+1}: Total {len(rep)} tracks')
 
         return reps
-    
+
     def group_fovs(
-        self, fovs, min_len=3, exposure_ms=None, 
+        self, fovs, min_len=3, exposure_ms=None,
         pixel_size_um=None, desc=''
     ):
         tracks = []
         for fov in tqdm(fovs, desc=desc):
             grouped = group_tracks(
-                fov, min_len=min_len, exposure_ms=exposure_ms, 
+                fov, min_len=min_len, exposure_ms=exposure_ms,
                 pixel_size_um=pixel_size_um)
             tracks = self.fuse_lists([tracks, grouped])
         return tracks
-    
+
     def fuse_lists(self, lists):
         return sum(lists, [])
 
@@ -304,5 +304,5 @@ def table_import(path):
                 Only support {list(supported_extensions.keys())}')
         return False
     table = file_handler(path)
-    
+
     return table

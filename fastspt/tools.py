@@ -17,7 +17,7 @@ def fuse_lists(*args):
 
 def open_ts_table(path, verbose=0):
     ts_table = pd.read_csv(path)
-    if verbose: 
+    if verbose:
         ts_table.head()
     return ts_table
 
@@ -50,7 +50,7 @@ def save_csv(df: pd.DataFrame, path, suffix=''):
 
 def get_loc_numbers(ts_table: pd.DataFrame, do_plot=True):
     '''
-    Analyses number of particles per frame, returns the list 
+    Analyses number of particles per frame, returns the list
     with the length of number of frames
     '''
     _, idx = np.unique(ts_table.frame, return_index=True)
@@ -68,13 +68,13 @@ def convert_grouped_tracks_to_df(grouped_tracks):
 
 
 def open_and_link_ts_table(
-    path, 
-    min_frame=None, 
-    max_frame=None, 
-    exposure_ms=60, 
-    link_distance_um=0.3, 
-    link_memory=1, 
-    verbose=0, 
+    path,
+    min_frame=None,
+    max_frame=None,
+    exposure_ms=60,
+    link_distance_um=0.3,
+    link_memory=1,
+    verbose=0,
     loc_num_plot=True,
     save_csv_with_track_id=True,
     save_linked_localizations=True,
@@ -90,13 +90,13 @@ def open_and_link_ts_table(
     if not os.path.exists(tracked_path) or force:
         ts_table = open_ts_table(path)
         tracks = link_ts_table(
-            ts_table, 
-            min_frame, 
-            max_frame, 
-            exposure_ms, 
-            link_distance_um, 
-            link_memory, 
-            verbose, 
+            ts_table,
+            min_frame,
+            max_frame,
+            exposure_ms,
+            link_distance_um,
+            link_memory,
+            verbose,
             loc_num_plot
             )
         if save_csv_with_track_id:
@@ -112,7 +112,7 @@ def open_and_link_ts_table(
 
     grouped_tracks = matimport.group_tracks(
         tracks, min_len=3, max_len=20, exposure_ms=exposure_ms)
-    
+
     if save_linked_localizations:
         try:
             df = convert_grouped_tracks_to_df(grouped_tracks)
@@ -124,36 +124,36 @@ def open_and_link_ts_table(
 
 
 def link_ts_table(
-    ts_table: pd.DataFrame, 
-    min_frame=None, 
-    max_frame=None, 
-    exposure_ms=60, 
-    link_distance_um=0.3, 
-    link_memory=1, 
-    verbose=0, 
+    ts_table: pd.DataFrame,
+    min_frame=None,
+    max_frame=None,
+    exposure_ms=60,
+    link_distance_um=0.3,
+    link_memory=1,
+    verbose=0,
     loc_num_plot=True,
 ):
     '''
-    links particles using 'x [nm]', 'y [nm]', 'frame' collumns with trackpy 
+    links particles using 'x [nm]', 'y [nm]', 'frame' collumns with trackpy
     returns Dataframe with 'x', 'y', 'frame', 'particle' columns
     '''
     df = pd.DataFrame(
-        columns=['x', 'y', 'frame'], 
-        data=ts_table[['x [nm]', 'y [nm]', 'frame']].values)    
-        
+        columns=['x', 'y', 'frame'],
+        data=ts_table[['x [nm]', 'y [nm]', 'frame']].values)
+
     df.x = df.x / 1000  # nm -> um
     df.y = df.y / 1000  # nm -> um
     if min_frame:
         df = df[df.frame >= min_frame]
     if max_frame:
         df = df[df.frame <= min_frame]
-    if verbose: 
+    if verbose:
         df.head()
     print(f'Linking with max distance {link_distance_um} um')
     tracks = tp.link_df(df, search_range=link_distance_um, memory=link_memory)
-    if verbose: 
+    if verbose:
         print(tracks.head())
-    
+
     return tracks
 
 
@@ -179,4 +179,3 @@ def load_matlab_dataset_from_path(path):
     """Returns a dataset object from a Matlab file"""
     mat = scipy.io.loadmat(path)
     return np.asarray(mat['trackedPar'][0])
-

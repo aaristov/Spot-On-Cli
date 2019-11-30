@@ -3,15 +3,15 @@ from fastspt import fit2, simulate
 import numpy as np
 
 sim_params = dict(
-    num_tracks=1e3, 
-    dt=0.06, 
-    D_free=0.06, 
-    loc_error=0.02, 
-    p_binding=3e-2, 
-    p_unbinding=1e-1, 
-    p_bleaching=1e-1, 
-    p_out_of_focus=1e-5, 
-    min_len=5, 
+    num_tracks=1e3,
+    dt=0.06,
+    D_free=0.06,
+    loc_error=0.02,
+    p_binding=3e-2,
+    p_unbinding=1e-1,
+    p_bleaching=1e-1,
+    p_out_of_focus=1e-5,
+    min_len=5,
     use_tqdm=False
     )
 
@@ -19,17 +19,17 @@ sim_params['F_bound'] = sim_params['p_binding']/(
     sim_params['p_binding'] + sim_params['p_unbinding'])
 
 fit_params = dict(
-    n_lags=1, 
-    plot=False, 
-    dt=0.06, 
-    D=(0, 0.1), 
-    fit_D=(False, True), 
-    F=(0.5, 1 - 0.5), 
-    fit_F=(True, True), 
-    sigma=(0.1,), 
-    fit_sigma=(True,), 
-    n_bins=50, 
-    max_um=0.6, 
+    n_lags=1,
+    plot=False,
+    dt=0.06,
+    D=(0, 0.1),
+    fit_D=(False, True),
+    F=(0.5, 1 - 0.5),
+    fit_F=(True, True),
+    sigma=(0.1,),
+    fit_sigma=(True,),
+    n_bins=50,
+    max_um=0.6,
     verbose=False
 )
 
@@ -45,7 +45,7 @@ def test_sim_tracks():
 def test_fit_tracks():
 
     np.testing.assert_almost_equal(
-        fit['D'][1], sim_params['D_free'], 
+        fit['D'][1], sim_params['D_free'],
         decimal=2,
         err_msg=f"D_free input: {sim_params['D_free']}, fit: {fit['D'][1]}")
 
@@ -53,8 +53,8 @@ def test_fit_tracks():
         fit['sigma'][0], sim_params['loc_error'], decimal=2)
 
     np.testing.assert_almost_equal(
-        fit['F'][0], sim_params['F_bound'],         
-        decimal=1, 
+        fit['F'][0], sim_params['F_bound'],
+        decimal=1,
         err_msg=f"Fitted F_bound {fit['F'][0]:.2f}, \
             simulated {sim_params['F_bound']:.2f}"
     )
@@ -75,13 +75,13 @@ def test_fit_2_sigmas(
     Simulate confined state
     '''
     sim1 = simulate.tracks(
-        n_tracks=n_tracks, 
+        n_tracks=n_tracks,
         D_free=D_free,
         loc_error=sigmas[0],
         use_tqdm=False)
 
     sim2 = simulate.tracks(
-        n_tracks=n_tracks, 
+        n_tracks=n_tracks,
         D_free=D_free,
         loc_error=sigmas[1],
         use_tqdm=False)
@@ -116,7 +116,7 @@ def test_fit_2_sigmas(
 
     for s, S in zip(sigmas, fit_2_sigmas['sigma']):
         np.testing.assert_almost_equal(S, s, 2)
-    
+
     assert fit_1_sigmas['chi2_norm'] > fit_2_sigmas['chi2_norm']
 
     return fit_2_sigmas
@@ -139,7 +139,7 @@ def test_fit_return_hists():
 def test_fit_return_fit():
     tracks = simulate.tracks(num_tracks=100, min_len=3)
     fit = fit2.fit_spoton_2_0(
-        tracks, n_lags=5, plot=False, return_hists=False, 
+        tracks, n_lags=5, plot=False, return_hists=False,
         return_fit_result=True)
     fit_result = fit['fit_result']
     assert isinstance(fit_result, fit2.lmfit.minimizer.MinimizerResult)
