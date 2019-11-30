@@ -15,7 +15,7 @@ class JumpLengthHistogram:
     Object containing histogram values, bin edges, centers of bins 
     and time lag
     '''
-    def __init__(self, hist, bin_edges, lag:int):
+    def __init__(self, hist, bin_edges, lag: int):
         self.hist = hist
         assert int(lag) > 0
         self.lag = int(lag)
@@ -24,7 +24,8 @@ class JumpLengthHistogram:
         assert len(self.vector) == len(self.hist)
     
     def __repr__(self):
-        return f"""JumpLengthHistogram: {self.lag} lag, {len(self.vector)} elements"""
+        return f"""JumpLengthHistogram: {self.lag} lag, 
+            {len(self.vector)} elements"""
     
     def __len__(self):
         return len(self.vector)
@@ -57,9 +58,10 @@ def fit_spoton_2_0(
 
     logger.info(f'Total {n_tracks} tracks')
 
-    hists = get_jds_histograms(tracks, n_lags, bins=n_bins, max_um=max_um, disable_tqdm=not verbose) 
+    hists = get_jds_histograms(
+        tracks, n_lags, bins=n_bins, max_um=max_um, disable_tqdm=not verbose
+        ) 
 
-    
     fit_result = fit_jd_hist(
         hists=hists, 
         dt=dt, 
@@ -81,10 +83,11 @@ def fit_spoton_2_0(
     D_all = np.array(D_all)[order]
     F_all = np.array(F_all)[order]
     
-
-    if plot:
-        
-        logger.info(f'fit_spoton_2_0: Plot fit for (D, F): {(D_all, F_all)}, {n_lags} lags')
+    if plot:  
+        logger.info(
+            f'fit_spoton_2_0: Plot fit for (D, F): {(D_all, F_all)}, \
+            {n_lags} lags'
+        )
         _ = [get_error_histogram_vs_model(
             h, 
             dt, 
@@ -115,7 +118,7 @@ def fit_spoton_2_0(
     return out
 
 
-def result_2_table(*results:[dict]):
+def result_2_table(*results: [dict]):
     new_dict = {}
     for r, res in enumerate(results):
         for k, v in res.items():
@@ -139,15 +142,16 @@ def result_2_table(*results:[dict]):
     df.index.name = 'replicate'
     return df
 
+
 def fit_jd_hist(
-    hists:list, 
-    dt:float, 
-    D:list, 
-    fit_D:list, 
-    F:list,
-    fit_F:list,
-    sigma:float, 
-    fit_sigma:bool,
+    hists: list, 
+    dt: float, 
+    D: list, 
+    fit_D: list, 
+    F: list,
+    fit_F: list,
+    sigma: float, 
+    fit_sigma: bool,
     verbose=False, 
     
 ):
@@ -166,7 +170,7 @@ def fit_jd_hist(
     popt (lmfit.minimizerResult): optimized parameters
     '''
 
-    from lmfit import Parameters, Parameter, fit_report, minimize
+    from lmfit import Parameters, Parameter, minimize
             
     def residual(fit_params, data):
         res = cumulative_error_jd_hist(fit_params, data, len(D))
@@ -177,9 +181,12 @@ def fit_jd_hist(
     # fit_params.add('sigma', value=sigma, vary=fit_sigma, min=0.)
     fit_params.add('dt', value=dt, vary=False)
     try:
-        fit_params.add('max_lag', value=max([h.lag for h in hists]), vary=False)
+        fit_params.add(
+            'max_lag', value=max([h.lag for h in hists]), vary=False
+        )
     except TypeError as e:
-        logger.error(f'problem with `hists`: expected `list`, got `{type(hists)}`')
+        logger.error(f'problem with `hists`: expected `list`,\
+            got `{type(hists)}`')
         raise e
     
     for i, (d, f_d, f, f_f) in enumerate(zip(D, fit_D, F, fit_F)):
@@ -190,9 +197,9 @@ def fit_jd_hist(
     for i, f in enumerate(F[:-1]):
         f_expr += f' - F{i}'
 
-    fit_params[f'F{i+1}'] = Parameter(name=f'F{i+1}', min=0., max=1., expr=f_expr) 
+    fit_params[f'F{i+1}'] = Parameter(
+        name=f'F{i+1}', min=0., max=1., expr=f_expr) 
     
-
     for i, (s, f_s, min_s, max_s) in enumerate(
         zip(
             sigma, 
@@ -203,11 +210,9 @@ def fit_jd_hist(
     ):
         fit_params.add(f'sigma{i}', value=s, min=min_s, max=max_s, vary=f_s)
         
-    
-    # fit_params.pretty_print()
     logger.debug('start minimize')
     
-    minimizer_result  = minimize(residual, fit_params, args=(hists, ))#, **solverparams)
+    minimizer_result = minimize(residual, fit_params, args=(hists, ))
 
     if verbose:
         logger.info(f'completed in {minimizer_result.nfev} steps')
@@ -216,7 +221,9 @@ def fit_jd_hist(
     return minimizer_result
        
         
-def get_jds_histograms(tracks, max_lag, max_um=0.6, bins=100, disable_tqdm=False):
+def get_jds_histograms(
+    tracks, max_lag, max_um=0.6, bins=100, disable_tqdm=False
+):
     '''
     For every lag in 1..max_lag compute density histogram
     
@@ -224,10 +231,12 @@ def get_jds_histograms(tracks, max_lag, max_um=0.6, bins=100, disable_tqdm=False
     def single_hist(i):
         lag = i + 1
         _jds = [
-            bayes.get_jd(t.xy, lag, filter_frame_intevals=t.frame) for t in tracks
+            bayes.get_jd(t.xy, lag, filter_frame_intevals=t.frame) 
+            for t in tracks
         ]
         jds = np.concatenate(_jds, axis=0)
-        h, edges = np.histogram(jds, bins=bins, range=(0, max_um), density=True)
+        h, edges = np.histogram(
+            jds, bins=bins, range=(0, max_um), density=True)
         return JumpLengthHistogram(h, edges, lag)
         
     hists = list(
@@ -243,28 +252,19 @@ def get_jds_histograms(tracks, max_lag, max_um=0.6, bins=100, disable_tqdm=False
     
     return hists
 
-# def convert_value_to_vector(value, length, dtype):
-    
-#     if isinstance(value, dtype):
-#         value = [value] * length
-#     elif len(value) == 1 and isinstance(value, dtype):
-#         value = value * length
-#     else:
-#         assert len(value) == length, f'Bad value vector of len {len(value)}, while D len {length}'
-#     return value
-
 
 def get_error_histogram_vs_model(
-    hist:JumpLengthHistogram, 
-    dt:float, 
-    sigma:list, 
-    D:list, 
-    F:list, 
+    hist: JumpLengthHistogram, 
+    dt: float, 
+    sigma: list, 
+    D: list, 
+    F: list, 
     p_density=bayes.p_jd, 
     plot=True,
 ) -> np.ndarray:
 
-    assert len(D) == len(F), f'D and F vector should of the same length. Got {len(D)} and {len(F)}'
+    assert len(D) == len(F), f'D and F vector should of the same length. \
+        Got {len(D)} and {len(F)}'
     assert isinstance(hist, JumpLengthHistogram)
 
     vector = hist.vector
@@ -278,7 +278,9 @@ def get_error_histogram_vs_model(
     
     if plot:
         plt.figure(figsize=(10, 1))
-        for i, (_D, _F, s) in enumerate(zip_longest(D, F, sigma, fillvalue=sigma[0])):
+        for i, (_D, _F, s) in enumerate(
+            zip_longest(D, F, sigma, fillvalue=sigma[0])
+        ):
             name = 'D'
 
             plt.plot(
@@ -310,11 +312,12 @@ def get_error_histogram_vs_model(
         
     return model - values
 
+
 def cumulative_error_jd_hist(
-    fit_params:lmfit.Parameters, 
-    hist_list:list, 
-    num_states:int
-    ) -> np.ndarray:
+    fit_params: lmfit.Parameters, 
+    hist_list: list, 
+    num_states: int
+) -> np.ndarray:
     
     p = fit_params.valuesdict()
     # print(p)
@@ -323,7 +326,7 @@ def cumulative_error_jd_hist(
     try:
         for i in range(2):
             sigma.append(p[f'sigma{i}'])
-    except:
+    except KeyError:
         pass
 
     cum = [

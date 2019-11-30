@@ -1,19 +1,6 @@
-# A packaged version of the fastSPT code by Anders Sejr Hansen, Feb. 2016
-# Python rewriting by MW, March 2017
-#
-# In this module we put all the plotting functions
-# 
-# History: For the history of the script see the related CHANGELOG file.
-
-## ==== Imports
-import matplotlib as mpl
-#mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
-
-from fastspt import fit, plot, bind, simulate, bayes, core
-import lmfit
-
+from fastspt import bind, bayes, core
 
 
 def threshold_sqr_displacement(sd, thr=0.005):
@@ -22,21 +9,24 @@ def threshold_sqr_displacement(sd, thr=0.005):
     '''
     return np.where(sd < thr, 0, 1)
 
-def select_states(track,
-    cols=['s0','s1'], 
+
+def select_states(
+    track,
+    cols=['s0', 's1'], 
     states={'free': [1, 1], 'med': [0, 1], 'bound': [0, 0]},
 ):
     segs = {}
     for label, values in states.items():
         sel = [track.col(col) == v for col, v in zip(cols, values)]
-        if len(sel)>1:
+        if len(sel) > 1:
             sel = np.logical_and(*sel)
         segs[label] = track[sel]
     return segs
-    
+
+
 def plot_track_multistates(
     track: core.Track, 
-    cols=['s0','s1'], 
+    cols=['s0', 's1'], 
     states={'free': [1, 1], 'med': [1, 0], 'bound': [0, 0]}, 
     exclude='free',
     msd=False,
@@ -52,10 +42,10 @@ def plot_track_multistates(
     
     if msd:
         base = 130
-        figsize=(15, 4)
+        figsize = (15, 4)
     else:
         base = 120
-        figsize=(10, 4)
+        figsize = (10, 4)
     
     fig = plt.figure(figsize=figsize)
 
@@ -67,47 +57,52 @@ def plot_track_multistates(
     
     for label, seg in segs.items():
         if len(seg) and label is not exclude:
-            plt.plot(seg[:,0], seg[:,1], '.', label=label)
+            plt.plot(seg[:, 0], seg[:, 1], '.', label=label)
 
-    plt.xlim(track[:,0].mean() - lim, track[:,0].mean() + lim)
-    plt.ylim(track[:,1].mean() - lim, track[:,1].mean() + lim)
+    plt.xlim(track[:, 0].mean() - lim, track[:, 0].mean() + lim)
+    plt.ylim(track[:, 1].mean() - lim, track[:, 1].mean() + lim)
     # plt.axis('equal')
 
     plt.grid()
     plt.legend()
     plt.title(title)
 
-
     fig.add_subplot(base+2)
 
     def get_jds(track):
-        return [bayes.get_jd(track.xy, lag=l + 1, extrapolate=1) for l in range(n_lags)]
+        return [
+            bayes.get_jd(track.xy, lag=l + 1, extrapolate=1) 
+            for l in range(n_lags)]
     
     jds = get_jds(track)
     
     # frames = np.arange(len(jds[0]))
     try:
-        [plt.plot(track.frame, jd, label=f'jump length {i + 1} Δt', alpha=0.5) for i, jd in enumerate(jds)]
-        #     plt.plot(frames[jd_bound_filter], jds[0][jd_bound_filter], 'r.', label='bound')
+        [plt.plot(track.frame, jd, label=f'jump length {i + 1} Δt', alpha=0.5) 
+            for i, jd in enumerate(jds)]
 
         for label, seg in segs.items():
             if len(seg) and label is not exclude:
-                plt.plot(seg[:,3], np.zeros(len(seg)), 'o', label=label, alpha=0.5)  
+                plt.plot(
+                    seg[:, 3], np.zeros(len(seg)), 'o', 
+                    label=label, alpha=0.5)  
     except ValueError:
         pass
         
     try:
-#         plt.plot(track.frame, track.col('uncertainty_xy [nm]'), label='sigma')
-        plt.plot(track.frame, track.col('uncertainty_xy [nm]') * 3, label='3 * sigma')
+        plt.plot(
+            track.frame, track.col('uncertainty_xy [nm]') * 3, 
+            label='3 * sigma')
     except Exception:
         pass
     
     try:
         swift_id = track.col('seg.id')
-        plt.plot(track.frame, (swift_id - min(swift_id)) * jd_lim, label='swift id')
+        plt.plot(
+            track.frame, (swift_id - min(swift_id)) * jd_lim, 
+            label='swift id')
     except Exception:
         pass
-    
     
     plt.ylim(-0.01, jd_lim * 1.05)
     plt.legend(loc=(1, 0.5))
@@ -115,19 +110,24 @@ def plot_track_multistates(
     if msd:
         fig.add_subplot(base+3)
 
-
-        msd = [np.mean(bayes.get_jd(track.xy, lag=l + 1) ** 2) for l in range(len(track)-2)]
+        msd = [
+            np.mean(bayes.get_jd(track.xy, lag=l + 1) ** 2) 
+            for l in range(len(track)-2)]
         plt.plot(msd)
         plt.xlabel('frame lag')
         plt.title('MSD')
 
     plt.tight_layout()
 
-def plot_track_xy_sd(track_xytf, figsize=(8,4), xy_radius=0.3, sd_max=0.2, bound_sd=0.01, title=None):
+
+def plot_track_xy_sd(
+    track_xytf, figsize=(8, 4), xy_radius=0.3, 
+    sd_max=0.2, bound_sd=0.01, title=None
+):
     
     sd = bind.get_sqr_displacement(track_xytf)
     track = np.array(track_xytf)
-    xy = track[:,:2]
+    xy = track[:, :2]
     x_center, y_center = xy.mean(axis=0)
     dt = track[:-1, 3]
 
@@ -155,132 +155,3 @@ def plot_track_xy_sd(track_xytf, figsize=(8,4), xy_radius=0.3, sd_max=0.2, bound
     plt.show()
 
     return True
-        
-
-def plot_kinetics_fit(jump_hist,
-                      fit_result:lmfit.model.ModelResult, 
-                      CDF1=True,
-                      states=2,
-                      save='', 
-                      **fit_params) -> bool:
-    
-    h1=jump_hist
-
-    if CDF1:
-        HistVecJumps = h1[2]
-        JumpProb = h1[3]
-        HistVecJumpsCDF = h1[0]
-        JumpProbCDF = h1[1]
-    else:
-        HistVecJumps = h1[0]
-        JumpProb = h1[1]
-        HistVecJumpsCDF = h1[0]
-        JumpProbCDF = h1[1]
-
-    fit2states_dict = {2 : True, 3 : False}
-    fit2states = fit2states_dict[states]
-
-    ## Generate the PDF corresponding to the fitted parameters
-    y = fit.generate_jump_length_distribution(fit_results=fit_result.params, 
-                                              JumpProb = JumpProbCDF, 
-                                              HistVecJumps=HistVecJumpsCDF,
-                                              fit2states=fit2states,
-                                              norm=True, 
-                                              **fit_params
-                                              )
-    ## Normalization does not work for PDF yet (see commented line in fastspt.py)
-    if CDF1:
-        y = y * float(len(HistVecJumpsCDF))/float(len(HistVecJumps))
-    #plt.figure(figsize=(18,8)) # Initialize the plot
-    fig = plot.plot_histogram(HistVecJumps, JumpProb, HistVecJumpsCDF, y, ) ## Read the documentation of this function to learn how to populate all the 'na' fields
-    
-    return fig
-
-
-def plot_histogram(HistVecJumps, emp_hist, HistVecJumpsCDF=None, sim_hist=None,
-                   TimeGap=None, SampleName=None, CellNumb=None,
-                   len_trackedPar=None, Min3Traj=None, CellLocs=None,
-                   CellFrames=None, CellJumps=None, ModelFit=None,
-                   D_free=None, D_bound=None, F_bound=None, figsize=(18,8) ) -> plt.figure:
-    """Function that plots an empirical histogram of jump lengths,
-    with an optional overlay of simulated/theoretical histogram of 
-    jump lengths"""
-
-    ## Parameter parsing for text labels
-    if CellLocs != None and CellFrames != None:
-        locs_per_frame = round(CellLocs/CellFrames*1000)/1000
-    else:
-        locs_per_frame = 'na'    
-    if SampleName == None:
-        SampleName = 'na'
-    if CellNumb == None:
-        CellNumb = 'na'
-    if len_trackedPar == None:
-        len_trackedPar = 'na'
-    if Min3Traj == None:
-        Min3Traj = 'na'
-    if CellLocs == None:
-        CellLocs = 'na'
-    if CellFrames == None:
-        CellFrames = 'na'
-    if CellJumps == None:
-        CellJumps = 'na'
-    if ModelFit == None:
-        ModelFit = 'na'
-    if D_free == None:
-        D_free = 'na'
-    if D_bound == None:
-        D_bound = 'na'
-    if F_bound == None:
-        F_bound = 'na'
-
-    ## Do something
-    JumpProb = emp_hist
-    scaled_y = sim_hist
-    
-    histogram_spacer = 0.055
-    number = JumpProb.shape[0]
-    cmap = plt.get_cmap('viridis')
-    colour = [cmap(i) for i in np.linspace(0, 1, number)]
-
-    fig = plt.figure(figsize=figsize)
-    
-    for i in range(JumpProb.shape[0]-1, -1, -1):
-        new_level = (i)*histogram_spacer
-        colour_element = colour[i] #colour[round(i/size(JumpProb,1)*size(colour,1)),:]
-        plt.plot(HistVecJumps, (new_level)*np.ones(HistVecJumps.shape[0]), 'k-', linewidth=1)
-        for j in range(1, JumpProb.shape[1]): ## Looks like we are manually building an histogram. Why so?
-            x1 = HistVecJumps[j-1]
-            x2 = HistVecJumps[j]
-            y1 = new_level
-            y2 = JumpProb[i,j-1]+new_level
-            plt.fill([x1, x1, x2, x2], [y1, y2, y2, y1], color=colour_element) # /!\ TODO MW: Should use different colours
-        if type(sim_hist) != type(None): ## HistVecJumpsCDF should also be provided
-            plt.plot(HistVecJumpsCDF, scaled_y[i,:]+new_level, 'k-', linewidth=2)
-        if TimeGap != None:
-            plt.text(0.6*max(HistVecJumps), new_level+0.3*histogram_spacer, r'$\Delta t$ : {} ms'.format(TimeGap*(i+1)))
-        else:
-            plt.text(0.6*max(HistVecJumps), new_level+0.3*histogram_spacer, r'${} \Delta t$'.format(i+1))
-
-    plt.xlim(0,HistVecJumps.max())
-    plt.ylabel('Probability')
-    plt.xlabel(r'jump length ($\mu m$)')
-    if type(sim_hist) != type(None):
-        plt.title('{}; Cell number {}; Fit Type = {}; Dfree = {}; Dbound = {}; FracBound = {}, Total trajectories: {}; => Length 3 trajectories: {}, \nLocs = {}, Locs/Frame = {}; jumps: {}'
-          .format(
-              SampleName, CellNumb, ModelFit,
-              D_free, D_bound, F_bound,
-              len_trackedPar, Min3Traj, CellLocs,
-              locs_per_frame,
-              CellJumps))
-    else:
-        plt.title('{}; Cell number {}; Total trajectories: {}; => Length 3 trajectories: {}, \nLocs = {}, Locs/Frame = {}; jumps: {}'
-          .format(
-              SampleName, CellNumb,
-              len_trackedPar, Min3Traj, CellLocs,
-              locs_per_frame,
-              CellJumps))
-    plt.yticks([])
-    
-
-    return fig

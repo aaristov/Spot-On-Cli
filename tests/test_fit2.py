@@ -15,7 +15,8 @@ sim_params = dict(
     use_tqdm=False
     )
 
-sim_params['F_bound'] = sim_params['p_binding']/(sim_params['p_binding'] + sim_params['p_unbinding'])
+sim_params['F_bound'] = sim_params['p_binding']/(
+    sim_params['p_binding'] + sim_params['p_unbinding'])
 
 fit_params = dict(
     n_lags=1, 
@@ -40,6 +41,7 @@ fit = fit2.fit_spoton_2_0(tracks, **fit_params)
 def test_sim_tracks():
     assert len(tracks) == sim_params['num_tracks']
 
+
 def test_fit_tracks():
 
     np.testing.assert_almost_equal(
@@ -47,23 +49,28 @@ def test_fit_tracks():
         decimal=2,
         err_msg=f"D_free input: {sim_params['D_free']}, fit: {fit['D'][1]}")
 
-    np.testing.assert_almost_equal(fit['sigma'][0], sim_params['loc_error'], decimal=2)
+    np.testing.assert_almost_equal(
+        fit['sigma'][0], sim_params['loc_error'], decimal=2)
 
     np.testing.assert_almost_equal(
         fit['F'][0], sim_params['F_bound'],         
         decimal=1, 
-        err_msg=f"Fitted F_bound {fit['F'][0]:.2f}, simulated {sim_params['F_bound']:.2f}"
+        err_msg=f"Fitted F_bound {fit['F'][0]:.2f}, \
+            simulated {sim_params['F_bound']:.2f}"
     )
+
 
 def test_fit_jd_hist_bad_input():
     with pytest.raises(TypeError):
-        fit2.fit_jd_hist(None, 0, [0,0], [1,1], [0,1], [1,1], 0, 1, 0)
+        fit2.fit_jd_hist(None, 0, [0, 0], [1, 1], [0, 1], [1, 1], 0, 1, 0)
 
     with pytest.raises(AttributeError):
-        fit2.fit_jd_hist([None], 0, [0,0], [1,1], [0,1], [1,1], 0, 1, 0)
+        fit2.fit_jd_hist([None], 0, [0, 0], [1, 1], [0, 1], [1, 1], 0, 1, 0)
 
 
-def test_fit_2_sigmas(sigmas = [0.01, 0.03], n_tracks=5000, D_free=0.1, plot=False):
+def test_fit_2_sigmas(
+    sigmas=[0.01, 0.03], n_tracks=5000, D_free=0.1, plot=False
+):
     '''
     Simulate confined state
     '''
@@ -86,7 +93,7 @@ def test_fit_2_sigmas(sigmas = [0.01, 0.03], n_tracks=5000, D_free=0.1, plot=Fal
         D=[0, 0.0, 0.1],
         F=[0.3, 0.3, 0.4],
         fit_D=[False, False, True],
-        fit_F=[1,1,1],
+        fit_F=[1, 1, 1],
         sigma=[0.01, 0.04],
         fit_sigma=[True, True],
         n_bins=100,
@@ -99,7 +106,7 @@ def test_fit_2_sigmas(sigmas = [0.01, 0.03], n_tracks=5000, D_free=0.1, plot=Fal
         D=[0, 0.1],
         F=[0.3, 0.7],
         fit_D=[False, True],
-        fit_F=[1,1],
+        fit_F=[1, 1],
         sigma=[0.01],
         fit_sigma=[True, True],
         n_bins=100,
@@ -120,6 +127,7 @@ def test_fit_high_lags():
     fit = fit2.fit_spoton_2_0(tracks, n_lags=5, plot=False)
     assert isinstance(fit, dict)
 
+
 def test_fit_return_hists():
     tracks = simulate.tracks(num_tracks=100, min_len=3)
     fit = fit2.fit_spoton_2_0(tracks, n_lags=5, plot=False, return_hists=True)
@@ -127,8 +135,11 @@ def test_fit_return_hists():
     assert len(hists) == 5
     assert [isinstance(h, fit2.JumpLengthHistogram) for h in hists]
 
+
 def test_fit_return_fit():
     tracks = simulate.tracks(num_tracks=100, min_len=3)
-    fit = fit2.fit_spoton_2_0(tracks, n_lags=5, plot=False, return_hists=False, return_fit_result=True)
+    fit = fit2.fit_spoton_2_0(
+        tracks, n_lags=5, plot=False, return_hists=False, 
+        return_fit_result=True)
     fit_result = fit['fit_result']
     assert isinstance(fit_result, fit2.lmfit.minimizer.MinimizerResult)
