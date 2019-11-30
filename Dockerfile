@@ -7,6 +7,6 @@
 FROM jupyter/scipy-notebook
 WORKDIR /home/jovian
 EXPOSE 8888
-COPY ./requirements.txt .
+COPY . .
 RUN pip install -r requirements.txt
 CMD [ "jupyter", "lab" ]
