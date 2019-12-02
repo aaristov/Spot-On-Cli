@@ -11,14 +11,14 @@ def get_sqr_displacement(track_xytf):
 
 
 def sliding_window(array1d, size=3):
-    '''
+    """
     cuts array1d into pieces by size and returns vstack
-    '''
+    """
     len_ = len(array1d)
     n = len_ - size + 1
     out = np.empty((n, size), dtype=array1d.dtype)
     for i in range(n):
-        out[i] = array1d[i:i+size]
+        out[i] = array1d[i : i + size]
     return out
 
 
@@ -34,7 +34,7 @@ def count_match(match_array_1d):
 def count_on_off(
     track_xytf, threshold=0.005, on_seq=[1, 0, 0, 0], off_seq=[0, 0, 0, 1]
 ):
-    '''
+    """
     Counts on/off cases inside the track.
     Track [[x1, y1, time1, frame1], [...]]
     is converted do square displacements.
@@ -60,7 +60,7 @@ def count_on_off(
 
     (kon, koff) : tuple (int, int)
         number of binidn g and unbinding event per track
-    '''
+    """
     assert len(on_seq) == len(off_seq)
     if len(track_xytf) <= len(on_seq):
         return (0, 0)
@@ -75,14 +75,13 @@ def count_on_off(
 
 
 def count_on_off_tracks(
-    tracks, min_len=7, threshold=0.005,
-    on_seq=[1, 0, 0, 0], off_seq=[0, 0, 0, 1]
+    tracks, min_len=7, threshold=0.005, on_seq=[1, 0, 0, 0], off_seq=[0, 0, 0, 1]
 ):
-    '''
+    """
     Counts template occurance in the list of treack with format
     [[x1, y1, time1, frame1], [...]].
     Return (kon, koff) for all tracks.
-    '''
+    """
     if min_len:
         tracks = list(filter(lambda t: len(t) >= min_len, tracks))
 

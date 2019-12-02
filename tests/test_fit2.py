@@ -16,7 +16,7 @@ def test_fit_tracks():
         D_bound=0.0,
         D_free=0.05,
         loc_error=0.03,
-         p_binding=0.0001,
+        p_binding=0.0001,
         p_unbinding=0.001,
         p_bleaching=1e-1,
         p_out_of_focus=1e-5,
@@ -28,7 +28,7 @@ def test_fit_tracks():
         n_lags=7,
         plot=False,
         dt=0.06,
-        D=(0., .1),
+        D=(0.0, 0.1),
         fit_D=(True, True),
         F=(0.5, 0.5),
         fit_F=(True, True),
@@ -45,7 +45,7 @@ def test_fit_tracks():
 
     tracks = simulate.tracks(**sim_params)
 
-    assert len(tracks) == sim_params['num_tracks']
+    assert len(tracks) == sim_params["num_tracks"]
 
     fit = fit2.fit_spoton_2_0(tracks, **fit_params)
 

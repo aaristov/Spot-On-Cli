@@ -328,4 +328,3 @@ def plot_hist(vector, values, label, **kwargs):
     Simple barplot with autimatic calculation of bin width
     """
     plt.bar(vector, values, width=np.diff(vector)[0], **kwargs)
-
