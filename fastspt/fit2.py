@@ -303,9 +303,9 @@ def get_error_histogram_vs_model(
             zip_longest(D, F, sigma, fillvalue=sigma[0])
         ):
             name = 'D'
-            values = p_density(dt * lag, s, _D)(vector) * _F
+            state_values = p_density(dt * lag, s, _D)(vector) * _F
 
-            out[f'state_{i}'] = list(values)
+            out[f'state_{i}'] = list(state_values)
 
             plt.plot(
                 vector,
