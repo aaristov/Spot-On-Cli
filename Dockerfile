@@ -2,11 +2,11 @@
 # to build:
 #   docker build --rm -f "Dockerfile" -t spot-on-cli:lab-scipy . 
 # To run:
-#   docker run --shm-size 1g -it -v c:\Users\andre:/home/jovian/andrey -p 8888:8888/tcp spot-on-cli:lab-scipy
+#   docker run --shm-size 4g -it -v c:\Users\andre:/home/jovian/andrey -p 8888:8888/tcp spot-on-cli:lab-scipy
 
 FROM jupyter/scipy-notebook
 WORKDIR /home/jovian
 EXPOSE 8888
-COPY ./requirements.txt .
+COPY . .
 RUN pip install -r requirements.txt
 CMD [ "jupyter", "lab" ]

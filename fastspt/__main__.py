@@ -4,15 +4,17 @@ import argparse
 import json
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARN)
 logger = logging.getLogger(__name__)
 
-def pprint(d:dict):
+
+def pprint(d: dict):
     for k, i in d.items():
         print(f'{k} : {i}')
 
+
 def main(args=None, callback=None):
-    
+
     def log(msg=None, level='info'):
         if callback:
             callback({'Message': msg})
@@ -28,29 +30,32 @@ def main(args=None, callback=None):
     def info(msg):
         return log(msg, level='info')
 
-
-    #info('main')
-
     # Main parser
 
-    parser = argparse.ArgumentParser(prog='fastspt', description='Fit kinetics using Spot-ON method')
+    parser = argparse.ArgumentParser(
+        prog='fastspt',
+        description='Fit kinetics using Spot-ON method')
     subparsers = parser.add_subparsers(dest='command')
-    
-    for command in ['fit' ]:
+
+    for command in ['fit']:
 
         subparsers.add_parser(command)
     # fit
 
-    fit_parser = subparsers.add_parser('fit', help='fit kinetics model using spot-on')
+    fit_parser = subparsers.add_parser(
+        'fit',
+        help='fit kinetics model using spot-on')
+    fit_parser.add_argument('--mat', nargs='*', type=str, default='',
+                            help='matlab dataset with localizations, \
+                                format replicate->fov->coodrinates \
+                                [[[[x, y, frame, track]]]], \
+                                units [px, px, int, int]')
+    fit_parser.add_argument('--xml', nargs='*', type=str, default='',
+                            help='xml tracks from Trackmate')
 
-    fit_parser.add_argument('--mat', nargs='*', type=str, default='', 
-        help='matlab dataset with localizations, format replicate->fov->coodrinates [[[[x, y, frame, track]]]], units [px, px, int, int]')
-    fit_parser.add_argument('--xml', nargs='*', type=str, default='', 
-        help='xml tracks from Trackmate')
-    
     fit_parser.add_argument('--config', type=str, help='json config file')
 
-    #args = parser.parse_args()
+    # args = parser.parse_args()
     debug(args)
     try:
         if args is not None:
@@ -60,14 +65,12 @@ def main(args=None, callback=None):
 
     except TypeError:
         error(f'Wrong args while parsing: {args}')
-        
-        exit(1)
 
-    
+        exit(1)
 
     if not args.command:
         error('No command, exiting')
-        #parser.print_help()
+        # parser.print_help()
 
     elif args.command == 'fit':
         info('Do fit')
@@ -82,7 +85,6 @@ def main(args=None, callback=None):
             error('Bad configuration')
             exit(2)
 
-            
         for fname in fnames:
             if not os.path.isfile(fname):
                 error('File not found')
@@ -100,6 +102,7 @@ def main(args=None, callback=None):
             exit(1)
     else:
         pass
+
 
 if __name__ == "__main__":
     main()
