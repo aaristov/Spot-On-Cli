@@ -1,0 +1,18 @@
+# Dockerfile for jupyter notebook with all necessary dependensies for spot-on-cli
+# to build:
+#   docker build --rm -f "Dockerfile" -t spot-on-cli:lab-scipy . 
+# To run:
+#   docker run --shm-size 4g -it -v c:\Users\andre:/home/jovian/andrey -p 8888:8888/tcp spot-on-cli:lab-scipy
+
+FROM jupyter/scipy-notebook
+WORKDIR /home/jovian
+USER root
+EXPOSE 8888
+RUN mkdir Spot-On && \ 
+    cd Spot-On && \
+    git clone https://github.com/aaristov/Spot-On-Cli.git && \
+    cd Spot-On-Cli && \
+    git checkout fit-confuned-state && \
+    pip install -r requirements.txt
+USER $NB_UID
+CMD [ "jupyter", "lab" ]
