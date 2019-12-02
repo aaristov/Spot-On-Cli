@@ -47,6 +47,8 @@ def fit_spoton_2_0(
     verbose: bool = False,
     return_fit_result: bool = False,
     return_hists: bool = False,
+    return_values: bool = False,
+    figsize=(10,1),
     **kwargs
 ) -> dict:
 
@@ -76,7 +78,8 @@ def fit_spoton_2_0(
         fit_F=fit_F,
         sigma=sigma,
         fit_sigma=fit_sigma,
-        verbose=verbose
+        verbose=verbose,
+        figsize=figsize,
     )
 
     values = fit_result.params.valuesdict()
@@ -93,14 +96,17 @@ def fit_spoton_2_0(
             f'fit_spoton_2_0: Plot fit for (D, F): {(D_all, F_all)}, \
             {n_lags} lags'
         )
-        _ = [get_error_histogram_vs_model(
+        data_from_plots = [get_error_histogram_vs_model(
             h,
             dt,
             sigma,
             D_all,
             F_all,
-            plot=True
+            plot=True,
+            figsize=figsize,
          ) for h in hists]
+    else:
+        data_from_plots = []
 
     out = {
         'sigma': list(sigma),
@@ -112,6 +118,7 @@ def fit_spoton_2_0(
         'chi2_norm': fit_result.chisqr / n_bins / n_lags,
         'n_iter': fit_result.nfev,
         'path': path,
+        'data_from_plots': data_from_plots,
         **kwargs}
 
     if return_fit_result:
@@ -134,12 +141,14 @@ def result_2_table(*results: [dict]):
                     new_dict[k] = {}
                     new_dict[k][r] = v
             elif isinstance(v, (list, np.ndarray)):
+                
                 for i, vv in enumerate(v):
-                    try:
-                        new_dict[f'{k}_{i}'][r] = vv
-                    except KeyError:
-                        new_dict[f'{k}_{i}'] = {}
-                        new_dict[f'{k}_{i}'][r] = vv
+                    if isinstance(vv, (float, int, str)):
+                        try:
+                            new_dict[f'{k}_{i}'][r] = vv
+                        except KeyError:
+                            new_dict[f'{k}_{i}'] = {}
+                            new_dict[f'{k}_{i}'][r] = vv
             else:
                 pass
 #                 print(f'skip {k}')
@@ -158,6 +167,7 @@ def fit_jd_hist(
     sigma: float,
     fit_sigma: bool,
     verbose=False,
+    figsize=(10,1),
 
 ):
 
@@ -178,7 +188,7 @@ def fit_jd_hist(
     from lmfit import Parameters, Parameter, minimize
 
     def residual(fit_params, data):
-        res = cumulative_error_jd_hist(fit_params, data, len(D))
+        res = cumulative_error_jd_hist(fit_params, data, len(D), figsize=figsize)
         return res
 
     fit_params = Parameters()
@@ -265,6 +275,7 @@ def get_error_histogram_vs_model(
     F: list,
     p_density=bayes.p_jd,
     plot=True,
+    figsize=(10,1)
 ) -> np.ndarray:
 
     assert len(D) == len(F), f'D and F vector should of the same length. \
@@ -276,36 +287,47 @@ def get_error_histogram_vs_model(
     lag = hist.lag
     model = np.zeros_like(vector)
 
+    out = {}
+
+    out['lag'] = lag
+    out['vector'] = list(vector)
+
     for d, f, s, in zip_longest(D, F, sigma, fillvalue=sigma[0]):
         # print('_D,_F, sigma: ', d, f, s)
         model = model + p_density(dt * lag, s, d)(vector) * f
+    out['model'] = list(model)
 
     if plot:
-        plt.figure(figsize=(10, 1))
+        plt.figure(figsize=figsize)
         for i, (_D, _F, s) in enumerate(
             zip_longest(D, F, sigma, fillvalue=sigma[0])
         ):
             name = 'D'
+            values = p_density(dt * lag, s, _D)(vector) * _F
+
+            out[f'state_{i}'] = list(values)
 
             plt.plot(
                 vector,
-                p_density(dt * lag, s, _D)(vector) * _F,
+                values,
                 alpha=0.5,
                 label=f'{name}$_{i}$: {_D:.2f}, σ: {s:.3f}, fraction {_F:.0%}'
             )
         plt.plot(vector, model, 'r-', label='sum model')
 
-        plot_hist(
+        plt.bar(
             vector,
             values,
+            width=np.diff(vector)[0],
             label=f'jd {lag} lag',
             fill=None,
             alpha=0.8
         )
 
-        plot_hist(
+        plt.bar(
             vector,
             model - values,
+            width=np.diff(vector)[0],
             label=f'residuals',
             fill='red'
         )
@@ -314,13 +336,16 @@ def get_error_histogram_vs_model(
         plt.legend(loc=(1, 0))
         plt.show()
 
-    return model - values
+    out['residuals'] = list(model - values)
+    out['values'] = list(values)
+    return out
 
 
 def cumulative_error_jd_hist(
     fit_params: lmfit.Parameters,
     hist_list: list,
-    num_states: int
+    num_states: int,
+    figsize: tuple,
 ) -> np.ndarray:
 
     p = fit_params.valuesdict()
@@ -339,8 +364,9 @@ def cumulative_error_jd_hist(
             sigma=sigma,
             D=list(p[f'D{i}'] for i in range(num_states)),
             F=list(p[f'F{i}'] for i in range(num_states)),
-            plot=False
-        )
+            plot=False,
+            figsize=figsize
+        )['residuals']
         for h in hist_list
     ]
     return np.concatenate(cum, axis=0)
