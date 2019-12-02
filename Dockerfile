@@ -9,5 +9,5 @@ WORKDIR /home/jovian
 EXPOSE 8888
 COPY . .
 RUN pip install -r requirements.txt && \
-    pip install -e .
+    pip install --user .
 CMD [ "jupyter", "lab" ]
