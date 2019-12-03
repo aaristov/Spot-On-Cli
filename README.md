@@ -1,7 +1,7 @@
 Spot-On (cli)
 -------
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/aaristov/spot-on-cli/reorganizing-notebooks)
-[![Build Status](https://travis-ci.com/aaristov/Spot-On-Cli.svg?branch=reorganizing-notebooks)](https://travis-ci.com/aaristov/Spot-On-Cli)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/aaristov/spot-on-cli/reorganize-notebooks)
+[![Build Status](https://travis-ci.com/aaristov/Spot-On-Cli.svg?branch=reorganize-notebooks)](https://travis-ci.com/aaristov/Spot-On-Cli)
 
 This repository collects a series of scripts to analyze data from single particle tracking experiments. The code was initially written by Anders Sejr Hansen and translated to Python by Maxime Woringer. A [Matlab version](https://gitlab.com/tjian-darzacq-lab/spot-on-matlab) exists and is maintained by Anders Sejr Hansen.
 
