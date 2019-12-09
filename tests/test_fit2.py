@@ -1,6 +1,7 @@
 import pytest
 from fastspt import fit2, simulate
 import numpy as np
+import pandas as pd
 
 
 def test_sim_tracks():
@@ -146,3 +147,11 @@ def test_fit_return_fit():
     )
     fit_result = fit["fit_result"]
     assert isinstance(fit_result, fit2.lmfit.minimizer.MinimizerResult)
+
+
+def test_result_2_table():
+    data = [simulate.tracks(100) for _ in range(2)]
+    fits = [fit2.fit_spoton_2_0(d, plot=False) for d in data]
+    table = fit2.result_2_table(*fits)
+    assert isinstance(table, pd.DataFrame)
+    assert len(table) == 2
