@@ -8,7 +8,7 @@ import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARN)
+# logger.setLevel(logging.WARN)
 
 
 class JumpLengthHistogram:
@@ -125,28 +125,30 @@ def fit_spoton_2_0(
     return out
 
 
-def result_2_table(*results: [dict]):
+def result_2_table(*results: [dict], add_columns=[], add_values=[]):
     new_dict = {}
-    for r, res in enumerate(results):
-        for k, v in res.items():
-            if isinstance(v, (float, int, str)):
+    for replicate, result in enumerate(results):
+        for key, value in result.items():
+            if isinstance(value, (float, int, str)):
                 try:
-                    new_dict[k][r] = v
+                    new_dict[key][replicate] = value
                 except KeyError:
-                    new_dict[k] = {}
-                    new_dict[k][r] = v
-            elif isinstance(v, (list, np.ndarray)):
-                for i, vv in enumerate(v):
+                    new_dict[key] = {}
+                    new_dict[key][replicate] = value
+            elif isinstance(value, (list, np.ndarray)):
+                for i, sub_value in enumerate(value):
                     try:
-                        new_dict[f"{k}_{i}"][r] = vv
+                        new_dict[f"{key}_{i}"][replicate] = sub_value
                     except KeyError:
-                        new_dict[f"{k}_{i}"] = {}
-                        new_dict[f"{k}_{i}"][r] = vv
+                        new_dict[f"{key}_{i}"] = {}
+                        new_dict[f"{key}_{i}"][replicate] = sub_value
             else:
                 pass
     #                 print(f'skip {k}')
     df = pd.DataFrame.from_dict(new_dict)
     df.index.name = "replicate"
+    for title, value in zip(add_columns, add_values):
+        df[title] = value
     return df
 
 
