@@ -1,6 +1,36 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from fastspt import bind, bayes, core
+import seaborn as sns
+import pandas as pd
+
+
+def plot_stats(
+    table: pd.DataFrame,
+    query="chi2 < 100",
+    x="strain",
+    hue="replicate",
+    kind="box",
+    width=0.3,
+    size=10,
+    alpha=0.3,
+):
+    """
+    Plots barplots with spots for every column on DataFrame
+    """
+    assert isinstance(table, pd.DataFrame)
+
+    for c in table.columns.values:
+        data = table.query(query)
+        try:
+            sns.catplot(
+                x=x, y=c, data=data, boxprops=dict(alpha=alpha), kind=kind, width=width
+            )
+            sns.swarmplot(x=x, y=c, hue=hue, data=data, size=size)
+            plt.title(c)
+            plt.show()
+        except ValueError:
+            print(f"skip {c}")
 
 
 def threshold_sqr_displacement(sd, thr=0.005):
@@ -11,7 +41,7 @@ def threshold_sqr_displacement(sd, thr=0.005):
 
 
 def select_states(
-    track, cols=["s0", "s1"], states={"free": [1, 1], "med": [0, 1], "bound": [0, 0]},
+    track, cols=["prediction"], states={"free": [1], "bound": [0]},
 ):
     segs = {}
     for label, values in states.items():
