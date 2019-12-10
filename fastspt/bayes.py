@@ -373,7 +373,7 @@ def get_switching_rates(xytfu: [core.Track], fps: float, column: str = "free") -
         map(lambda a: sum(a.col(column)[:-1] == 1), xytfu)
     )
     # print(n_bound_spots, n_bound_spots_for_rates)
-    n_total_spots = sum_list(map(lambda a: len(a), xytfu))
+    n_total_spots = sum_list(map(len, xytfu))
 
     #     n_total_segments = n_total_spots - len(xytfu)
     #     n_bound_segments = n_bound_spots - len(bound)
