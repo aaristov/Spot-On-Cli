@@ -54,8 +54,8 @@ def select_states(
 
 def plot_track_multistates(
     track: core.Track,
-    cols=["s0", "s1"],
-    states={"free": [1, 1], "med": [1, 0], "bound": [0, 0]},
+    cols=["state"],
+    states={"free": [1], "bound": [0]},
     exclude="free",
     msd=False,
     lim=0.5,
@@ -75,7 +75,7 @@ def plot_track_multistates(
         base = 120
         figsize = (10, 4)
 
-    fig = plt.figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize, facecolor='w')
 
     fig.add_subplot(base + 1)
     plt.plot(track.x, track.y, ".-", label="trajectory xy")
