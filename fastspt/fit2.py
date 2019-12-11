@@ -22,7 +22,8 @@ class JumpLengthHistogram:
         assert int(lag) > 0
         self.lag = int(lag)
         self.bin_edges = bin_edges
-        self.vector = bin_edges[:-1] + np.diff(bin_edges[:2])[0] / 2
+        self.width = np.diff(bin_edges)[0]
+        self.vector = bin_edges[:-1] + self.width / 2
         assert len(self.vector) == len(self.hist)
 
     def __repr__(self):
@@ -267,6 +268,7 @@ def get_error_histogram_vs_model(
 
     vector = hist.vector
     values = hist.hist
+    width = hist.width
     lag = hist.lag
     model = np.zeros_like(vector)
 
@@ -287,11 +289,11 @@ def get_error_histogram_vs_model(
             )
         plt.plot(vector, model, "r-", label="sum model")
 
-        plot_hist(vector, values, label=f"jd {lag} lag", fill=None, alpha=0.8)
+        plt.bar(vector, values, width=width, label=f"jd {lag} lag", fill=None, alpha=0.8)
 
-        plot_hist(vector, model - values, label=f"residuals", fill="red")
+        plt.bar(vector, model - values, width=width, label=f"residuals", fill="red", alpha=0.8)
 
-        plt.title("sigma " + ", ".join([f"{s:.3f}" for s in sigma]))
+        plt.title(f"{lag} Δt")
         plt.legend(loc=(1, 0))
         plt.show()
 
@@ -324,9 +326,3 @@ def cumulative_error_jd_hist(
     ]
     return np.concatenate(cum, axis=0)
 
-
-def plot_hist(vector, values, label, **kwargs):
-    """
-    Simple barplot with autimatic calculation of bin width
-    """
-    plt.bar(vector, values, width=np.diff(vector)[0], **kwargs)
