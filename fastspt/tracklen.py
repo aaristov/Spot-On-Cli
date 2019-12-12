@@ -11,9 +11,9 @@ def get_track_lengths_dist(tracks: [core.Track], plot=True):
     hist, bins = get_hist(tracks)
     try:
         fit_result, popt = fit_exponent(hist, bins)
-        a, c, d = popt
+        a, c = popt
         decay_rate = 1 / c
-        print(f"Fit result: {a:.2f} * e^(-x * {decay_rate:.2f}) + {d:.2f}")
+        print(f"Fit result: {a:.0f} * e^(-{decay_rate:.2f}x)")
         if plot:
             plot_hist_fit(hist, bins, fit_result, popt)
         return decay_rate
@@ -33,8 +33,8 @@ def get_hist(cell):
     return hist, bins[:-1]
 
 
-def exponent(x, a, c, d):
-    return a * np.exp(-x / c) + d
+def exponent(x, a, c):
+    return a * np.exp(-x / c)
 
 
 def fit_exponent(hist, bins, fun=exponent, p0=None):
@@ -47,9 +47,9 @@ def fit_exponent(hist, bins, fun=exponent, p0=None):
 
 
 def plot_hist_fit(hist, bins, fit_result, popt):
-    a, c, d = popt
+    a, c = popt
     plt.bar(bins, hist, fill=None, label=f"track length")
-    plt.plot(bins, fit_result, label=f"{a:.2f}*exp(-x * {1/c:.2f})+{d:.2f}")
+    plt.plot(bins, fit_result, label=f"${a:.0f} * e^{{-{1/c:.2f} x}}$")
     plt.title("Track length distribution")
     plt.xlabel("track length")
     plt.ylabel("counts")
