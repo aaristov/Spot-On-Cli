@@ -3,3 +3,6 @@
 .vscode
 *.mat
 *.ipynb
+*.egg-info
+*.pdf
+*cache
