@@ -1,5 +1,6 @@
 Spot-On (cli) 
 -------
+
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/aaristov/spot-on-cli/master)
 [![Build Status](https://travis-ci.com/aaristov/Spot-On-Cli.svg?branch=master)](https://travis-ci.com/aaristov/Spot-On-Cli)
 

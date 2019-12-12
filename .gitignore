@@ -2,4 +2,6 @@
 *checkpoint.ipynb
 .vscode
 *.mat
-*.ipynb
+workspace/*
+*_cache
+*egg-info
