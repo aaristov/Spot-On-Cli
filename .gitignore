@@ -2,7 +2,7 @@
 *checkpoint.ipynb
 .vscode
 *.mat
-*.ipynb
+workspace*
 *.egg-info
 *.pdf
 *cache
