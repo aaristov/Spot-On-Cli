@@ -3,6 +3,7 @@ lmfit>=0.9.7
 matplotlib
 xmltodict
 pandas
+seaborn
 xlwt
 tqdm
 mat4py

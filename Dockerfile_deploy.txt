@@ -6,8 +6,13 @@
 
 FROM jupyter/scipy-notebook
 WORKDIR /home/jovian
+USER root
 EXPOSE 8888
-COPY . .
-RUN pip install -r requirements.txt && \
-    pip install --user .
+RUN mkdir Spot-On && \ 
+    cd Spot-On && \
+    git clone https://github.com/aaristov/Spot-On-Cli.git && \
+    cd Spot-On-Cli && \
+    git checkout fit-confuned-state && \
+    pip install -r requirements.txt
+USER $NB_UID
 CMD [ "jupyter", "lab" ]

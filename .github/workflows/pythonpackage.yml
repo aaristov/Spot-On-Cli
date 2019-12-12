@@ -32,3 +32,6 @@ jobs:
       run: |
         pip install pytest coverage pytest-cov
         pytest -v --cov=fastspt
+    - name: Codecov
+      uses: codecov/codecov-action@v1.0.4
+
