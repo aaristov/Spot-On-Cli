@@ -311,6 +311,7 @@ def get_error_histogram_vs_model(
         )
 
         plt.title('sigma ' + ', '.join([f'{s:.3f}' for s in sigma]))
+        plt.xlabel('jump distance, μm')
         plt.legend(loc=(1, 0))
         plt.show()
 
