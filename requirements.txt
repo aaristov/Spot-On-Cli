@@ -11,3 +11,4 @@ trackpy
 pytest
 coverage
 pytest-cov
+black
