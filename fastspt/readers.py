@@ -129,7 +129,12 @@ def read_anders(fn, new_format=True):
         y = [float(i) for i in tr[0][:, 1]]
         t = [float(i) for i in tr[1][0]]
         f = [int(i) for i in tr[2][0]]
-        traces.append(zip(x, y, t, f))
+        track = np.hstack((x, y, t, f))
+        traces.append(
+            Track(
+                track, columns=("x", "y", "t", "frame"), units=("um", "um", "sec", "")
+            )
+        )
     return traces
 
 
