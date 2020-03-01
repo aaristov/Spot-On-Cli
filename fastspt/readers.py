@@ -72,7 +72,8 @@ def remove_edge_tracks(tracks):
     x_max = max([t.x.max() for t in tracks])
     y_min = min([t.y.min() for t in tracks])
     y_max = max([t.y.max() for t in tracks])
-    return list(
+
+    good_tracks = list(
         filter(
             lambda t: t.x.min() > x_min
             and t.x.max() < x_max
@@ -81,6 +82,7 @@ def remove_edge_tracks(tracks):
             tracks,
         )
     )
+    return good_tracks
 
 
 def read_csv(fn):
@@ -189,5 +191,11 @@ def pandas_to_fastSPT(da, col_traj, col_x, col_y, col_t, col_frame):
             for tt in t.sort_values(col_frame).iterrows()
         ]
         # Order by trace, then by frame
-        out.append(tr)
+        out.append(
+            Track(
+                np.array(tr),
+                columns=["x", "y", "t", "frame"],
+                units=["um", "um", "sec", ""],
+            )
+        )
     return out
