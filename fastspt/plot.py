@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from fastspt import bind, bayes, core
+from fastspt import bayes, core
 import seaborn as sns
 import pandas as pd
 
@@ -75,7 +75,7 @@ def plot_track_multistates(
         base = 120
         figsize = (10, 4)
 
-    fig = plt.figure(figsize=figsize, facecolor='w')
+    fig = plt.figure(figsize=figsize, facecolor="w")
 
     fig.add_subplot(base + 1)
     plt.plot(track.x, track.y, ".-", label="trajectory xy")
@@ -144,10 +144,15 @@ def plot_track_multistates(
 
 
 def plot_track_xy_sd(
-    track_xytf, figsize=(8, 4), xy_radius=0.3, sd_max=0.2, bound_sd=0.01, title=None
+    track_xytf: core.Track,
+    figsize=(8, 4),
+    xy_radius=0.3,
+    sd_max=0.2,
+    bound_sd=0.01,
+    title=None,
 ):
 
-    sd = bind.get_sqr_displacement(track_xytf)
+    sd = bayes.get_jd(track_xytf.xy) ** 2
     track = np.array(track_xytf)
     xy = track[:, :2]
     x_center, y_center = xy.mean(axis=0)
