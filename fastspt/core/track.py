@@ -16,8 +16,8 @@ class Track:
     def __init__(
         self,
         array: np.array,
-        columns=["x", "y", "t", "f", "state", "id"],
-        units=["um", "um", "sec", "", "", ""],
+        columns=["x", "y", "t", "frame"],
+        units=["um", "um", "sec", ""],
     ):
         array = np.array(array)
         assert len(columns) == array.shape[1]
